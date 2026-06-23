@@ -49,19 +49,37 @@ async function apiFetch(path, opts = {}) {
 
 // ---- PWA INSTALL PROMPT ----
 let deferredInstallPrompt = null;
+let installShown = false;
+
+function tryShowInstallBanner() {
+  if (installShown) return;
+  if (localStorage.getItem('warungkita_install_dismissed') === '1') return;
+  const banner = document.getElementById('installBanner');
+  if (!banner) return;
+  banner.classList.add('show');
+  installShown = true;
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  // Show banner after a short delay (don't interrupt onboarding)
-  if (localStorage.getItem('warungkita_install_dismissed') !== '1') {
-    setTimeout(() => {
-      const banner = document.getElementById('installBanner');
-      if (banner && !document.getElementById('main-chat').classList.contains('active')) {
-        // show on onboarding only (after they saw value)
-        banner.classList.add('show');
-      }
-    }, 4000);
-  }
+  // Show banner: onboarding -> 4s, main chat -> 8s (after user has had a chance to interact)
+  const inMainChat = document.getElementById('main-chat')?.classList.contains('active');
+  const delay = inMainChat ? 8000 : 4000;
+  setTimeout(tryShowInstallBanner, delay);
+});
+
+// Re-show in main chat if user navigates from onboarding without seeing it
+// (covers case where beforeinstallprompt fired late)
+window.addEventListener('DOMContentLoaded', () => {
+  const mainChat = document.getElementById('main-chat');
+  if (!mainChat) return;
+  const observer = new MutationObserver(() => {
+    if (mainChat.classList.contains('active') && deferredInstallPrompt && !installShown) {
+      setTimeout(tryShowInstallBanner, 6000);
+    }
+  });
+  observer.observe(mainChat, {attributes: true, attributeFilter: ['class']});
 });
 
 window.addEventListener('appinstalled', () => {
@@ -73,6 +91,23 @@ window.addEventListener('appinstalled', () => {
 document.addEventListener('DOMContentLoaded', () => {
   const installBtn = document.getElementById('installBtn');
   const installClose = document.getElementById('installClose');
+  const installManual = document.getElementById('btnInstallManual');
+
+  // Show manual install button in header whenever prompt is available
+  // (works even if banner was dismissed)
+  const showManualIfPossible = () => {
+    if (installManual && deferredInstallPrompt) {
+      installManual.style.display = 'flex';
+    }
+  };
+
+  // Always show manual install button — give user a way to trigger it
+  // even before beforeinstallprompt fires (Chrome can take 30+ seconds
+  // to fire it on first visit). Behavior adapts based on prompt availability.
+  if (installManual) {
+    installManual.style.display = 'flex';
+  }
+
   if (installBtn) {
     installBtn.onclick = async () => {
       if (!deferredInstallPrompt) return;
@@ -80,10 +115,36 @@ document.addEventListener('DOMContentLoaded', () => {
       const { outcome } = await deferredInstallPrompt.userChoice;
       if (outcome === 'accepted') {
         document.getElementById('installBanner').classList.remove('show');
+        if (installManual) installManual.style.display = 'none';
       }
       deferredInstallPrompt = null;
     };
   }
+  if (installManual) {
+    installManual.onclick = async () => {
+      if (!deferredInstallPrompt) {
+        // iOS Safari path — show instructions modal
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+          alert('Pasang di iPhone:\n1. Tap tombol Share (kotak dengan panah ke atas)\n2. Scroll ke bawah, pilih "Add to Home Screen"\n3. Tap "Add" ✅');
+        } else {
+          alert('Browser lo belum support install prompt otomatis. Buka menu browser → "Add to Home Screen" / "Install App".');
+        }
+        return;
+      }
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') {
+        if (installManual) installManual.style.display = 'none';
+        const banner = document.getElementById('installBanner');
+        if (banner) banner.classList.remove('show');
+      }
+      deferredInstallPrompt = null;
+    };
+  }
+  // Periodically check if prompt became available (Android fires it lazily)
+  setInterval(showManualIfPossible, 2000);
+  showManualIfPossible();
   if (installClose) {
     installClose.onclick = () => {
       const banner = document.getElementById('installBanner');
