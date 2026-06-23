@@ -91,6 +91,17 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('warungkita_install_dismissed', '1');
     };
   }
+  // Quick-action chip scroll fade — toggle class when at end of scroll
+  const qa = document.getElementById('quickActions');
+  if (qa) {
+    const updateScroll = () => {
+      const atEnd = qa.scrollLeft + qa.clientWidth >= qa.scrollWidth - 4;
+      qa.classList.toggle('scrolled-end', atEnd);
+    };
+    qa.addEventListener('scroll', updateScroll, {passive:true});
+    setTimeout(updateScroll, 300);
+    window.addEventListener('resize', updateScroll);
+  }
 });
 
 // ---- SERVICE WORKER ----
