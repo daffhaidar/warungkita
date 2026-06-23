@@ -7,5 +7,7 @@ node_modules/
 *.log
 *.db
 *.db-journal
-.hermes/
+*.db-shm
 *.db-wal
+.hermes/
+.vercel
