@@ -168,7 +168,33 @@ document.addEventListener('DOMContentLoaded', () => {
 // ---- SERVICE WORKER ----
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      // Detect SW updates — when new SW is found and installed,
+      // force it to take over immediately and reload to get fresh UI.
+      reg.addEventListener('updatefound', () => {
+        const newSw = reg.installing;
+        if (!newSw) return;
+        newSw.addEventListener('statechange', () => {
+          if (newSw.state === 'installed' && navigator.serviceWorker.controller) {
+            // New SW installed while old one is controlling — take over now
+            newSw.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+      // If there's already a waiting SW (deployed earlier, user just reopened),
+      // activate it immediately
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+    }).catch(() => {});
+
+    // When new SW takes control, reload to get fresh UI
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
   });
 }
 
