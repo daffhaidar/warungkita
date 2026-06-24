@@ -783,32 +783,69 @@ function parseTransaksi(text) {
   // Detect "utang [name]" at the end — e.g. "jual rokok 1 pack utang budi"
   let utangName = null;
 
-  // Pattern 1: "... utang [name]" — utang at end (e.g. "jual indomie 2 bks utang budi")
-  // Pattern 2: "[name] utang [items]" — utang in middle (e.g. "budi utang indomie 5 bks")
+  // Patterns:
+  // 1. "... utang [name]" — e.g. "jual indomie 2 bks utang budi"
+  // 2. "[name] utang [items]" — e.g. "budi utang indomie 5 bks"
+  // 3. "... utang si [name]" — e.g. "pempes 1 utang si jamal"
+  // 4. "si [name] utang [items]" — e.g. "si jamal utang karet 1 biji"
   const utangMatch = clean.match(/\s+utang\s+(.+)$/i);
   if (utangMatch) {
     const beforeUtang = clean.replace(/\s+utang\s+.+$/i, '').trim();
     const afterUtang = utangMatch[1].trim();
-    // Distinguish: is "utang" at end (pattern 1) or in middle (pattern 2)?
-    // Pattern 2 indicator: beforeUtang is short (1-2 words, no digits) AND afterUtang has digits
-    const beforeIsName = /^\S+(\s+\S+)?$/.test(beforeUtang) && !/\d/.test(beforeUtang);
-    const afterHasItems = /\d/.test(afterUtang);
-    if (beforeIsName && afterHasItems) {
-      // Pattern 2: "budi utang indomie 5 bks"
-      // Safety: strip common prefixes/modifier words from name
+
+    // Helper: extract name from "si [name] ..." or "[name]"
+    function extractName(s) {
+      const siMatch = s.match(/^si\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/i);
+      if (siMatch) return capitalize(siMatch[1]);
+      const wordMatch = s.match(/^([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/);
+      return wordMatch ? capitalize(wordMatch[1]) : null;
+    }
+    // Helper: extract items from "... [qty] [satuan] ..." or "... [name] [qty] ..."
+    function extractItems(s) {
+      // Has digits → likely items
+      if (/\d/.test(s)) return s;
+      return null;
+    }
+
+    const beforeHasDigits = /\d/.test(beforeUtang);
+    const afterHasDigits = /\d/.test(afterUtang);
+
+    // Priority 1: "si [name]" always indicates a person name — check FIRST
+    const afterSiMatch = afterUtang.match(/\b(si\s+[a-zA-Z]+(?:\s+[a-zA-Z]+)?)/i);
+    const beforeSiMatch = beforeUtang.match(/^(si\s+[a-zA-Z]+(?:\s+[a-zA-Z]+)?)\b/i);
+
+    if (afterSiMatch) {
+      // Pattern 3: "pempes 1 utang si jamal" or "karet 1 biji utang si jamal"
+      utangName = capitalize(afterSiMatch[1].replace(/^si\s+/i, ''));
+      // Remove "si [name]" from afterUtang, combine with beforeUtang as items
+      const afterClean = afterUtang.replace(/\b(si\s+[a-zA-Z]+(?:\s+[a-zA-Z]+)?)\b/i, '').trim();
+      clean = (beforeUtang + ' ' + afterClean).trim();
+    } else if (beforeSiMatch) {
+      // Pattern 4: "si jamal utang karet 1 biji"
+      utangName = capitalize(beforeSiMatch[1].replace(/^si\s+/i, ''));
+      clean = afterUtang;
+    } else if (!beforeHasDigits && afterHasDigits) {
+      // Pattern 2: "budi utang indomie 5 bks" → name before, items after
       const cleanName = beforeUtang.replace(/^(jual|catat|order|beli|tambah|stok|target|bayar|utang|janji|mau|aku|saya|gue|lagi|udah|sudah|minta|titip)\s+/i, '').trim();
       if (!cleanName) {
-        // No real name found — ask who the debt is for
         state.pendingUtangAskName = { itemsText: afterUtang };
-        addBotMsg('Utang atas nama siapa? 🙂<br>Ketik nama orangnya, misal: <strong>"Budi"</strong>');
+        addBotMsg('Utang atas nama siapa? 🙂<br>Ketik nama orangnya, misal: <strong>"Budi"</strong> atau <strong>"si Jamal"</strong>');
         return;
       }
       utangName = capitalize(cleanName);
       clean = afterUtang;
     } else {
-      // Pattern 1: "jual indomie 2 bks utang budi botak"
-      utangName = capitalize(afterUtang);
-      clean = beforeUtang;
+      // Pattern 1: "jual indomie 2 bks utang budi botak" → items before, name after
+      utangName = extractName(afterUtang);
+      if (!utangName) {
+        state.pendingUtangAskName = { itemsText: beforeUtang };
+        addBotMsg('Utang atas nama siapa? 🙂<br>Ketik nama orangnya, misal: <strong>"Budi"</strong> atau <strong>"si Jamal"</strong>');
+        return;
+      }
+      // Remove the name part from afterUtang to get any remaining items
+      const remainingAfter = afterUtang.replace(/^[a-zA-Z]+(?:\s+[a-zA-Z]+)?/, '').trim();
+      clean = beforeUtang + (remainingAfter ? ' ' + remainingAfter : '');
+      clean = clean.trim();
     }
   }
 
