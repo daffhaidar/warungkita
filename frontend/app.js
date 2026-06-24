@@ -902,6 +902,16 @@ function handlePendingPriceResponse(text) {
   const pending = state.pendingPrice;
   if (!pending) return;
 
+  // If user typed a new command instead of a price, cancel pending and route to processCommand
+  const commandKeywords = /^(jual|catat|order|beli|stok|target|bayar|utang|help|buka|tutup|riwayat|laporan|total|kembalian|blacklist|cek)\b/;
+  const looksLikeCommand = commandKeywords.test(t) || (t.includes('utang') && /\d/.test(t));
+  if (looksLikeCommand) {
+    state.pendingPrice = null;
+    saveState();
+    processCommand(text);
+    return;
+  }
+
   // Try to parse both price and satuan from response
   // Patterns: "15000 per kg", "20rb/ekor", "15000/kg", or just "15000"
   let priceNum, satuan;
