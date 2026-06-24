@@ -217,6 +217,7 @@ let state = {
   pendingBayar: null,  // { total } — saved last transaction total for "bayar" follow-up
   pendingStokQuestion: null, // transient — when asking "10 apa? (pcs/bungkus/dus)"
   pendingFuzzy: null, // { input, suggested, callback } — typo suggestion flow
+  pendingUtangAskName: null, // { itemsText } — when "janji utang mangkok 1 biji" has no person name
   // Setup wizard flag
   setupDone: false,
   // Debt tracking (utang piutang)
@@ -490,6 +491,21 @@ function processUserMsg(text) {
     } else {
       addBotMsg('Ketik <strong>"stok [nama] [jumlah]"</strong> buat catet stok dulu, atau <strong>"lanjut"</strong> kalo tetep mau jual tanpa stok');
     }
+    return;
+  }
+
+  // Pending utang name: user answering "utang atas nama siapa?"
+  if (state.pendingUtangAskName) {
+    const name = capitalize(text.trim());
+    if (!name || name.length > 50) {
+      addBotMsg('Ketik nama orangnya aja, misal: <strong>"Budi"</strong> atau <strong>"Mami Budi"</strong>');
+      return;
+    }
+    const saved = state.pendingUtangAskName;
+    state.pendingUtangAskName = null;
+    saveState();
+    // Route to parseTransaksi with the name filled in
+    parseTransaksi(`utang ${name} ${saved.itemsText}`);
     return;
   }
 
@@ -779,16 +795,16 @@ function parseTransaksi(text) {
     const afterHasItems = /\d/.test(afterUtang);
     if (beforeIsName && afterHasItems) {
       // Pattern 2: "budi utang indomie 5 bks"
-      // Safety: strip any remaining command prefix from name (e.g. "jual budi" → "budi")
-      const cleanName = beforeUtang.replace(/^(jual|catat|order|beli|tambah|stok|target|bayar|utang)\s+/i, '').trim();
+      // Safety: strip common prefixes/modifier words from name
+      const cleanName = beforeUtang.replace(/^(jual|catat|order|beli|tambah|stok|target|bayar|utang|janji|mau|aku|saya|gue|lagi|udah|sudah|minta|titip)\s+/i, '').trim();
       if (!cleanName) {
-        // Name was only a command word — fall through to pattern 1
-        utangName = capitalize(afterUtang);
-        clean = beforeUtang;
-      } else {
-        utangName = capitalize(cleanName);
-        clean = afterUtang;
+        // No real name found — ask who the debt is for
+        state.pendingUtangAskName = { itemsText: afterUtang };
+        addBotMsg('Utang atas nama siapa? 🙂<br>Ketik nama orangnya, misal: <strong>"Budi"</strong>');
+        return;
       }
+      utangName = capitalize(cleanName);
+      clean = afterUtang;
     } else {
       // Pattern 1: "jual indomie 2 bks utang budi botak"
       utangName = capitalize(afterUtang);
