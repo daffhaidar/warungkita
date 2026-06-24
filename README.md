@@ -218,7 +218,7 @@ warungkita/
 
 ## Studi Kasus
 
-WarungKita dikembangkan bersama **mitra UMKM nyata** — sebuah warung keluarga di Sleman, Yogyakarta dengan rating 5.0 ⭐ di Google Maps.
+WarungKita dikembangkan bersama **[Soto Sapi Nana Wulan](https://maps.app.goo.gl/BaAHPFkbaCHZXQpTA)** — warung keluarga di Minggir, Sleman, Yogyakarta (rating 5.0 ⭐ di Google Maps).
 
 Tantangan utama yang diidentifikasi:
 - Pencatatan transaksi masih manual di buku tulis
@@ -226,6 +226,11 @@ Tantangan utama yang diidentifikasi:
 - Hitung kembalian dan rekap harian memakan waktu
 
 WarungKita menjawab ketiga masalah tersebut dalam satu antarmuka chat.
+
+**Dampak yang terukur:**
+- Rekap harian: dari **~30 menit manual** → **hitungan detik** dengan satu perintah chat
+- Pencatatan utang: dari **"siapa tadi yang ngutang?"** → **daftar utang otomatis** per pelanggan
+- Kembalian: dari **itung manual** → **instan** (`bayar 35rb 50rb`)
 
 ---
 
