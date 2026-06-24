@@ -182,7 +182,22 @@ body{
 .r-line{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;gap:8px}
 .r-lbl{color:var(--ink-soft);flex:1}
 .r-val{font-weight:600;color:var(--ink);text-align:right;white-space:nowrap}
+.r-untung .r-lbl,.r-untung .r-val{color:#2f7d4f;font-weight:700}
 .rekap-divider{height:1px;background:var(--line);margin:6px 0}
+.rekap-share-row{display:flex;gap:8px;margin-top:12px}
+
+/* PROGRESS BAR */
+.progress-wrap{margin:6px 0 2px}
+.progress-bar{width:100%;height:10px;background:#e8e3d9;border-radius:8px;overflow:hidden;position:relative}
+.progress-fill{height:100%;background:linear-gradient(90deg,#6fcf97,#3a9d63);border-radius:8px;transition:width 0.4s ease}
+.progress-bar.over .progress-fill{background:linear-gradient(90deg,#f0c75e,#d9a441)}
+.progress-label{font-size:11px;color:var(--ink-soft);margin-top:3px;text-align:right}
+
+/* RIWAYAT ITEM */
+.riwayat-item{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:6px 0;font-size:12px}
+.riwayat-id{font-size:11px;color:#b0a89a;margin-bottom:3px;font-weight:500}
+.riwayat-line{color:var(--ink-soft);line-height:1.6}
+.riwayat-total{color:var(--ink);margin-top:3px;padding-top:3px;border-top:1px dashed var(--line)}
 
 /* CLOSED OVERLAY */
 .closed-overlay{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:50;backdrop-filter:blur(4px);justify-content:center;align-items:center;flex-direction:column;padding:32px;color:#fff;text-align:center;border-radius:var(--radius)}

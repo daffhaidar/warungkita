@@ -77,8 +77,11 @@
     <!-- QUICK ACTIONS -->
     <div class="quick-actions" id="quickActions">
       <button class="q-chip" data-cmd="catat">📝 Catat jualan</button>
+      <button class="q-chip" data-cmd="pengeluaran">💸 Pengeluaran</button>
+      <button class="q-chip" data-cmd="riwayat">📋 Riwayat</button>
       <button class="q-chip" data-cmd="laporan">📊 Laporan hari ini</button>
       <button class="q-chip" data-cmd="stok">📦 Cek stok</button>
+      <button class="q-chip" data-cmd="utang">💳 Utang</button>
       <button class="q-chip" data-cmd="target">🎯 Target</button>
       <button class="q-chip" data-cmd="tutup">🔒 Tutup</button>
       <button class="q-chip" data-cmd="buka">🌅 Buka lagi</button>
@@ -115,6 +118,10 @@
       <div class="modal-title" style="text-align:center">Rekap Hari Ini</div>
       <div class="modal-desc" style="text-align:center" id="rekapDate">-</div>
       <div id="rekapContent"></div>
+      <div class="rekap-share-row" id="rekapShareRow" style="display:none">
+        <button class="modal-btn secondary" id="btnRekapCopy" style="flex:1;min-width:0">📋 Salin Laporan</button>
+        <button class="modal-btn green" id="btnRekapWA" style="flex:1;min-width:0">🔗 Share WhatsApp</button>
+      </div>
       <div class="modal-actions" style="flex-direction:column;margin-top:16px">
         <button class="modal-btn primary" style="width:100%" id="btnRekapTutup">Sip, tutup 👌</button>
       </div>
