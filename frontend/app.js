@@ -1605,6 +1605,24 @@ function showLaporan() {
     html += renderProgressBar(total, state.targetHarian, pct);
   }
   addBotMsg(html);
+
+  // GenAI summary — async follow-up
+  if (typeof callBAI === 'function' && typeof buildLaporanPrompt === 'function') {
+    const loadingId = 'ai-loading-' + Date.now();
+    addBotMsg('<span id="' + loadingId + '" style="color:#b0a89a">🤖 AI sedang menganalisis...</span>');
+    const prompt = buildLaporanPrompt(state.namaWarung, tx, total, totalPengeluaran, untung, state.targetHarian, sorted);
+    callBAI(prompt).then(summary => {
+      const el = document.getElementById(loadingId);
+      if (summary && el) {
+        el.parentElement.innerHTML = '🤖 <strong>Ringkasan AI:</strong><br><br>' + esc(summary);
+      } else if (el) {
+        el.parentElement.parentElement.style.display = 'none';
+      }
+    }).catch(() => {
+      const el = document.getElementById(loadingId);
+      if (el) el.parentElement.parentElement.style.display = 'none';
+    });
+  }
 }
 
 function showLaporanMinggu() {
@@ -2013,6 +2031,24 @@ function showRekap() {
   // Bind share buttons (re-bind because innerHTML replaced them)
   document.getElementById('btnRekapCopy').onclick = copyRekapToClipboard;
   document.getElementById('btnRekapWA').onclick = shareRekapToWhatsApp;
+
+  // GenAI summary — async, loads after modal appears
+  if (typeof callBAI === 'function' && typeof buildRekapPrompt === 'function') {
+    const aiContainer = document.createElement('div');
+    aiContainer.className = 'rekap-card';
+    aiContainer.style.marginTop = '12px';
+    aiContainer.innerHTML = '<div class="r-line"><span class="r-lbl" style="color:#b0a89a">🤖 AI sedang membuat ringkasan...</span></div>';
+    document.getElementById('rekapContent').appendChild(aiContainer);
+
+    const prompt = buildRekapPrompt(state.namaWarung, tx, total, totalPengeluaran, untung, totalUtang, state.targetHarian, sorted);
+    callBAI(prompt).then(summary => {
+      if (summary) {
+        aiContainer.innerHTML = '<div class="r-line"><span class="r-lbl"><strong>🤖 Ringkasan AI:</strong></span></div><div style="padding:8px 16px;color:#5a5047;font-size:14px;line-height:1.5">' + esc(summary) + '</div>';
+      } else {
+        aiContainer.style.display = 'none';
+      }
+    }).catch(() => { aiContainer.style.display = 'none'; });
+  }
 }
 
 // ---- EXPORT / SHARE LAPORAN ----
