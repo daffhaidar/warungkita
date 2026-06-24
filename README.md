@@ -162,6 +162,9 @@ Hitung kembalian instan — cukup ketik `bayar 35000 50000`. Setelah transaksi, 
 ### 📱 PWA
 Bisa di-install sebagai app di HP (Add to Home Screen). Data tersimpan di localStorage — offline tetap jalan.
 
+### 🤖 AI Ringkasan (Generative AI)
+Setiap kali user membuka laporan harian (`laporan`) atau menutup warung (`tutup`), sistem secara otomatis menghasilkan ringkasan naratif menggunakan **MiniMax-M3** (Generative AI). Ringkasan mencakup analisis omzet, produk terlaris, progress target, dan motivasi harian — dalam bahasa Indonesia yang natural dan emoji. Didukung oleh 8 API key dengan rotasi otomatis untuk availability tinggi.
+
 ---
 
 ## Stack Teknologi
@@ -171,6 +174,7 @@ Bisa di-install sebagai app di HP (Add to Home Screen). Data tersimpan di localS
 | Frontend | Vanilla HTML/CSS/JS (mobile-first) |
 | State | localStorage (client-side) |
 | Parser | Regex + NLP lokal (tanpa API call) |
+| GenAI | MiniMax-M3 via B.AI API (8-key rotation) |
 | Deployment | Vercel (static) |
 | PWA | Service Worker + Web App Manifest |
 
