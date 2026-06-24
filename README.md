@@ -1,134 +1,219 @@
 # WarungKita
 
-> Asisten chat berbasis AI untuk UMKM Indonesia. Catat transaksi, pantau stok, pasang target penjualan — cukup chat seperti WhatsApp.
+> Asisten chat untuk UMKM Indonesia. Catat transaksi, pantau stok, kelola utang, hitung kembalian — cukup chat seperti WhatsApp.
 
-[![Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://warungkita-app-zeta.vercel.app)
-[![Stack](https://img.shields.io/badge/stack-FastAPI_+_SQLite_+_Vanilla_JS-8b7e6a)](https://github.com/daffhaidar/warungkita)
+[![Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://warungkita.vercel.app)
+[![Stack](https://img.shields.io/badge/stack-Vanilla_JS_+_PWA-8b7e6a)](https://github.com/daffhaidar/warungkita)
 
 ---
 
 ## Masalah
 
-Indonesia punya **64 juta pelaku UMKM** yang menyumbang **60% PDB nasional** — tapi hanya 12% yang berhasil mengintegrasikan teknologi ke dalam operasional bisnisnya. Mayoritas masih mencatat transaksi di buku tulis, mengandalkan promosi dari mulut ke mulut, dan menghitung stok secara manual. 
+Indonesia punya **64 juta pelaku UMKM** yang menyumbang **60% PDB nasional** — tapi hanya 12% yang berhasil mengintegrasikan teknologi ke dalam operasional bisnisnya. Mayoritas masih mencatat transaksi di buku tulis, mengandalkan promosi dari mulut ke mulut, dan menghitung stok secara manual.
 
 Tools digital yang tersedia terlalu rumit, terlalu mahal, atau tidak berbahasa Indonesia. Pelaku UMKM butuh sesuatu yang **segampang chat**.
 
 ## Solusi
 
-**WarungKita** menggantikan buku catatan dengan tampilan chat yang familiar. Pemilik warung cukup mengetik seperti biasa, dan AI yang akan mencatat, menghitung, serta merangkum datanya. Tanpa formulir. Tanpa spreadsheet. Tanpa perlu belajar.
+**WarungKita** menggantikan buku catatan dengan tampilan chat yang familiar. Pemilik warung cukup mengetik seperti biasa — tanpa formulir, tanpa spreadsheet, tanpa perlu belajar.
 
 ```
-👤 "jual soto 2, telur 1kg"
-🤖 ✅ Tercatat: Rp65.000 | Stok diupdate
+👤 "jual indomie 2 bks 3500"
+🤖 ✅ Indomie: 2 bks × Rp3.500 = Rp7.000
 
-👤 "total hari ini?"
-🤖 📊 Rp335.000 (67% dari target)
+👤 "jamal utang karet gelang 1 biji 500"
+🤖 💳 Tercatat utang Jamal: Rp500
+
+👤 "bayar 7000 10000"
+🤖 💰 Kembalian: Rp3.000
 ```
 
-## Fitur
+---
 
-| Fitur | Contoh Perintah | Deskripsi |
-|---|---|---|
-| **Catat Penjualan** | `jual soto 2, telur 1kg` | NLP parsing + konfirmasi sebelum simpan |
-| **Pantau Stok** | `stok telur 10kg` / `stok` | Otomatis berkurang tiap penjualan, alert menipis |
-| **Target Penjualan** | `target 500rb` / `target` | Support singkatan: `500rb`, `1.5jt`, `2,5jt` |
-| **Laporan Harian** | `total hari ini` | Omzet, jumlah transaksi, produk terlaris |
-| **Riwayat Pelanggan** | `blacklist 0812xxx` / `cek 0812xxx` | Catat nomor bermasalah |
-| **Tutup Warung** | `tutup` | Rekap otomatis + opsi buka kembali |
+## Fitur & Trigger Words
 
-## Arsitektur
+### 📝 Catat Penjualan
 
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  Frontend    │────▶│   Nginx      │────▶│   FastAPI    │
-│  (Vercel)    │     │  (rate limit,│     │  (port 8000) │
-│  Vanilla JS  │     │   CSP, SSL)  │     │              │
-└──────────────┘     └──────────────┘     └──────┬───────┘
-                                                  │
-                                          ┌───────▼───────┐
-                                          │    SQLite     │
-                                          │  (persistent) │
-                                          └───────────────┘
-```
+| Perintah | Contoh | Keterangan |
+|----------|--------|------------|
+| `jual [item] [qty]` | `jual indomie 2 bks` | Catat transaksi, harga diinget otomatis |
+| `jual [item] [qty] [harga]` | `jual indomie 2 bks 3500` | Auto-create item + harga sekaligus |
+| `jual [item] [qty] [satuan] utang [nama]` | `jual rokok 1 pack utang budi` | Jual + catat utang dalam satu perintah |
+| `[nama] utang [item] [qty]` | `budi utang indomie 5 bks` | Pola utang alternatif |
+| `si [nama] utang [item] [qty]` | `si jamal utang karet 1 biji` | Dengan marker "si" |
+| `[item] utang si [nama]` | `pempes 1 utang si jamal` | Nama di belakang |
 
-**Frontend:** Vanilla HTML/CSS/JS, mobile-first, arsitektur backend-first. Fallback ke parser lokal saat API tidak terjangkau.
+### 💳 Utang (Kasbon)
 
-**Backend:** FastAPI dengan dual-layer parsing — LLM via B.AI (`kimi-k2.5`) untuk input kompleks, parser regex lokal sebagai cadangan.
+| Perintah | Contoh | Keterangan |
+|----------|--------|------------|
+| `utang [nama] [item] [qty] [harga]` | `utang budi indomie 2 3500` | Catat utang langsung |
+| `utang` | `utang` | Lihat semua daftar utang |
+| `utang [nama]` | `utang budi` | Lihat detail utang satu orang |
+| `bayar utang [nama] [jumlah]` | `bayar utang budi 5000` | Bayar sebagian |
+| `utang lunas [nama]` | `utang lunas budi` | Tandai lunas |
 
-**Keamanan:** Rate limiting (Nginx + FastAPI), CORS whitelist, validasi input (maksimal 500 karakter, XSS filtering), CSP headers, HSTS.
+### 💰 Kembalian
+
+| Perintah | Contoh | Keterangan |
+|----------|--------|------------|
+| `bayar [total] [uang]` | `bayar 35000 50000` | Hitung kembalian |
+| `bayar` | `bayar` | Kembalian dari transaksi terakhir |
+| `kembalian` | `kembalian` | Hitung ulang dari transaksi terakhir |
+
+> Support: `bayar 35rb 50rb`, `bayar 1jt 1.5jt`
+
+### 📦 Stok
+
+| Perintah | Contoh | Keterangan |
+|----------|--------|------------|
+| `stok [item] [qty]` | `stok telur 10kg` | Set stok awal |
+| `stok [item] [qty] [harga]` | `stok indomie 10 bks 3500` | Stok + auto-create harga |
+| `isi/tambah/restock [item] [qty]` | `isi telur 5kg` | Tambah stok |
+| `stok` | `stok` | Cek stok sekarang |
+
+> Jual item yang belum ada stoknya → bot nanya: "Mau stok dulu atau lanjut?"
+
+### 💸 Pengeluaran
+
+| Perintah | Contoh | Keterangan |
+|----------|--------|------------|
+| `beli [item] [harga]` | `beli minyak 20rb` | Catat pengeluaran |
+| `belanja [item] [harga]` | `belanja daging 50rb` | Sama dengan `beli` |
+| `pengeluaran` | `pengeluaran` | Lihat daftar pengeluaran hari ini |
+
+### 🎯 Target
+
+| Perintah | Contoh | Keterangan |
+|----------|--------|------------|
+| `target [jumlah]` | `target 500rb` | Pasang target harian |
+| `target` | `target` | Cek progress (dengan progress bar) |
+
+> Support: `500rb`, `1jt`, `1.5jt`, `2,5jt`, `500000`
+
+### 📊 Laporan
+
+| Perintah | Contoh | Keterangan |
+|----------|--------|------------|
+| `total hari ini` | `total hari ini` | Omzet, transaksi, produk terlaris, untung bersih |
+| `laporan` | `laporan` | Sama dengan `total hari ini` |
+| `riwayat` / `history` | `riwayat` | Daftar semua transaksi hari ini |
+
+### ⚠️ Blacklist
+
+| Perintah | Contoh | Keterangan |
+|----------|--------|------------|
+| `blacklist [nomor]` | `blacklist 08123456789` | Tambah nomor bermasalah |
+| `cek [nomor]` | `cek 08123456789` | Cek apakah nomor di blacklist |
+
+### 🔒 Tutup Warung
+
+| Perintah | Contoh | Keterangan |
+|----------|--------|------------|
+| `tutup` | `tutup` | Rekap harian + opsi cetak laporan + share WhatsApp |
+| `buka` | `buka` | Buka warung lagi |
+
+### 📖 Lainnya
+
+| Perintah | Contoh | Keterangan |
+|----------|--------|------------|
+| `help` / `bantuan` / `?` | `help` | Lihat menu bantuan |
+
+---
+
+## Fitur Utama
+
+### 🧠 100% Generic — Tanpa Hardcode Produk
+Sistem tidak menghardcode nama produk atau harga. Item apa saja bisa dicatat — dari indomie sampai karet gelang. Harga dan satuan diinget otomatis setelah input pertama.
+
+### 📏 Satuan Fleksibel
+Support 50+ satuan lokal Indonesia: `kg`, `bks` (bungkus), `btr` (butir), `pcs`, `ekor`, `krat`, `dus`, `slop`, `lbr` (lembar), `btg` (batang), dan banyak lagi. Satuan baru diterima apa adanya.
+
+### 🔍 Typo Tolerance
+Sistem punya fuzzy matching (Levenshtein distance) — kalau user ngetik "rkok surya", bot nanya: "Maksudnya **Rokok Surya**? (Ya/Bukan)". Typo yang sudah dikonfirmasi disimpan untuk koreksi otomatis.
+
+### 💳 Utang (Kasbon)
+Fitur krusial untuk warung Indonesia. Catat utang pelanggan lewat chat, pantau siapa yang belum bayar, dan tandai lunas. Total utang muncul di rekap tutup warung.
+
+### 💰 Kembalian
+Hitung kembalian instan — cukup ketik `bayar 35000 50000`. Setelah transaksi, bot otomatis nanya "Pembeli bayar berapa?"
+
+### 📱 PWA
+Bisa di-install sebagai app di HP (Add to Home Screen). Data tersimpan di localStorage — offline tetap jalan.
+
+---
 
 ## Stack Teknologi
 
 | Lapisan | Teknologi |
-|---|---|
+|---------|-----------|
 | Frontend | Vanilla HTML/CSS/JS (mobile-first) |
-| Backend | Python 3.11 + FastAPI |
-| Database | SQLite (WAL mode) |
-| AI Parser | B.AI API (`kimi-k2.5`) + regex fallback |
-| Deployment | Vercel (frontend) + self-hosted (backend) |
-| Reverse Proxy | Nginx (rate limiting, SSL termination) |
+| State | localStorage (client-side) |
+| Parser | Regex + NLP lokal (tanpa API call) |
+| Deployment | Vercel (static) |
+| PWA | Service Worker + Web App Manifest |
+
+**Arsitektur:** Frontend-only, zero backend dependency. Semua parsing dan state management di client-side. Data tersimpan di browser localStorage.
+
+---
 
 ## Mulai Cepat
 
 ```bash
 # Clone
 git clone https://github.com/daffhaidar/warungkita.git
-cd warungkita
+cd warungkita/frontend
 
-# Backend
-cd backend
-pip install -r requirements.txt
-cp .env.example .env  # isi BAI_API_KEY
-python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
-
-# Frontend (development)
-cd ../frontend
+# Development
 python3 -m http.server 8080
 # Buka http://localhost:8080
+
+# Production
+# Deploy ke Vercel, Netlify, atau hosting static manapun
 ```
 
-**Production:** Lihat `backend/warungkita.service` untuk konfigurasi systemd.
-
-## Studi Kasus: Warung Soto di Sleman
-
-WarungKita dikembangkan bersama **mitra UMKM nyata** di Sleman, Yogyakarta — sebuah warung soto keluarga dengan rating 5.0 ⭐ di Google Maps yang menjual berbagai produk mulai dari soto sapi, telur bebek, hingga tiwul.
-
-Selama pengembangan, kami mengidentifikasi beberapa tantangan utama yang dihadapi warung tradisional:
-- Pencatatan transaksi masih manual di buku tulis, menyulitkan rekap bulanan
-- Promosi hanya mengandalkan WhatsApp Story secara bergantian antar anggota keluarga
-- Tidak ada sistem pencatatan riwayat pelanggan untuk menghindari transaksi bermasalah
-
-WarungKita dirancang untuk menjawab ketiga masalah tersebut dalam satu antarmuka chat yang sederhana.
-
-## Konteks Submission
-
-Proyek ini dibangun untuk **IDCamp Developer Challenge #2: Digitalisasi & Akselerasi UMKM dengan Generative AI** (Mei–Juli 2026).
-
-**Keputusan desain utama:**
-- Mobile-first dengan fallback offline (penting untuk koneksi tidak stabil)
-- Sepenuhnya Bahasa Indonesia (target pengguna tidak berbahasa Inggris)
-- Tanpa registrasi akun, tanpa onboarding berbelit (interaksi pertama sudah produktif)
-- Alur konfirmasi sebelum penyimpanan (UX pemaaf untuk pengguna non-teknis)
+---
 
 ## Struktur Proyek
 
 ```
 warungkita/
 ├── frontend/
-│   ├── index.html          # SPA shell
-│   ├── style.css           # Tema warm cream + sage
-│   ├── app.js              # Logika chat (backend-first)
-│   └── favicon.svg         # Ikon warung
-├── backend/
-│   ├── main.py             # Aplikasi FastAPI
-│   ├── database.py         # Skema SQLite + helper
-│   ├── parser.py           # Parser intent (LLM + fallback)
-│   ├── security.py         # Rate limiting + validasi input
-│   ├── requirements.txt    # Dependensi Python
-│   └── warungkita.service  # Unit file systemd
-├── preview/                # Purwarupa statis (arsip)
+│   ├── index.html      # SPA shell
+│   ├── style.css        # Tema warm cream + earth tones
+│   ├── app.js           # Semua logika (parser, state, UI)
+│   ├── sw.js            # Service Worker (PWA)
+│   ├── manifest.json    # Web App Manifest
+│   └── favicon.svg      # Ikon warung
+├── preview/             # Purwarupa statis (arsip)
 └── README.md
 ```
+
+---
+
+## Studi Kasus
+
+WarungKita dikembangkan bersama **mitra UMKM nyata** — sebuah warung keluarga di Sleman, Yogyakarta dengan rating 5.0 ⭐ di Google Maps.
+
+Tantangan utama yang diidentifikasi:
+- Pencatatan transaksi masih manual di buku tulis
+- Tidak ada sistem pencatatan utang pelanggan (kasbon)
+- Hitung kembalian dan rekap harian memakan waktu
+
+WarungKita menjawab ketiga masalah tersebut dalam satu antarmuka chat.
+
+---
+
+## Konteks Submission
+
+Proyek ini dibangun untuk **IDCamp Developer Challenge #2: Digitalisasi & Akselerasi UMKM dengan Generative AI** (Mei–Juli 2026).
+
+**Keputusan desain:**
+- Mobile-first dengan fallback offline
+- Sepenuhnya Bahasa Indonesia
+- Tanpa registrasi akun
+- Alur konfirmasi sebelum penyimpanan (UX pemaaf)
+- 100% generic — cocok untuk warung jenis apapun
 
 ---
 
