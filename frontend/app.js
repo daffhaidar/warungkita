@@ -710,6 +710,16 @@ function processCommand(text) {
     return;
   }
 
+  // "[name] utang [items]" — Pattern 2: utang in middle without "jual" prefix
+  // e.g. "budi utang indomie 5 bks" or "mami budi utang kopi 2 gelas"
+  if (t.includes('utang') && /\d/.test(t) && !t.match(/^(jual|catat|order|beli|stok|target|bayar|help|buka|tutup)\b/)) {
+    // Route to parseTransaksi which handles Pattern 2 detection
+    tryFuzzyOnInput(t, (corrected) => {
+      parseTransaksi(corrected !== null ? corrected : t);
+    });
+    return;
+  }
+
   // Jual (transaksi) — including loose forms
   if (
     t.match(/^(jual|catat|order|jualin|in)\s+/) ||
