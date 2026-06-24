@@ -28,6 +28,27 @@ Tools digital yang tersedia terlalu rumit, terlalu mahal, atau tidak berbahasa I
 🤖 💰 Kembalian: Rp3.000
 ```
 
+## Cara Pakai
+
+1. Buka **warungkita.vercel.app** di HP
+2. Ketik nama warung, tekan **"Gas mulai"**
+3. Langsung bisa dipake — ketik aja kayak chat WhatsApp
+
+Contoh perintah sehari-hari:
+
+| Mau ngapain? | Ketik |
+|---|---|
+| Catet jualan | `jual soto 2` |
+| Jual + langsung kasih harga | `jual indomie 1 bks 3500` |
+| Catet utang pelanggan | `utang budi soto 2 15000` |
+| Jual + catet utang sekaligus | `jual rokok 1 pack utang budi` |
+| Hitung kembalian | `bayar 35000 50000` |
+| Catet pengeluaran/beli bahan | `beli minyak 20rb` |
+| Cek stok | `stok` |
+| Lihat laporan hari ini | `total hari ini` |
+| Lihat daftar utang | `utang` |
+| Tutup warung + rekap | `tutup` |
+
 ---
 
 ## Fitur & Trigger Words
