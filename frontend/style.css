@@ -50,10 +50,10 @@ body{
 
 /* HEADER */
 .header{background:linear-gradient(135deg,#8b7e6a,#a0937e);padding:20px 20px 16px;color:#fff;flex-shrink:0;position:relative}
-.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;min-height:36px;overflow:hidden}
-.header-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0;overflow:hidden;flex-shrink:1}
-.header-title{font-size:13px;font-weight:500;opacity:0.85;letter-spacing:0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex-shrink:1}
-.header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;min-width:0}
+.header-top{display:grid;grid-template-columns:1fr auto;align-items:center;margin-bottom:4px;min-height:36px;gap:8px}
+.header-left{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden}
+.header-title{font-size:13px;font-weight:500;opacity:0.85;letter-spacing:0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.header-actions{display:flex;align-items:center;gap:6px;min-width:0}
 .header-icon-btn{
   width:36px;height:36px;
   background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.35);border-radius:50%;
