@@ -47,8 +47,11 @@ async function callBAI(prompt, retries = 3) {
       const data = await resp.json();
       let content = data.choices?.[0]?.message?.content?.trim() || null;
       if (content) {
-        // Strip  blocks
+        // Strip  blocks (closed and unclosed)
         content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        content = content.replace(/<think>[\s\S]*/gi, '').trim();
+        // Strip trailing artifacts
+        content = content.replace(/^➤\s*/gm, '').trim();
       }
       return content;
     } catch(e) {
