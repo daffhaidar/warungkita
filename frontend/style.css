@@ -65,6 +65,7 @@ body{
 }
 .header-icon-btn:active{transform:scale(0.92);background:rgba(255,255,255,0.3)}
 .header-icon-btn svg{width:18px;height:18px;display:block;color:#fff;stroke-width:2.4}
+.header-icon-btn .btn-fallback{display:none;font-size:16px;line-height:1}
 .tutup-btn{padding:6px 14px;background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.35);border-radius:16px;color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background 0.2s;-webkit-tap-highlight-color:transparent}
 .tutup-btn:active{background:rgba(255,255,255,0.35)}
 /* GEAR ICON — solid white circle + visible dark SVG for contrast */
@@ -80,6 +81,7 @@ body{
 }
 .header-icon:active{transform:scale(0.92);box-shadow:0 1px 4px rgba(0,0,0,0.25)}
 .header-icon svg{width:20px;height:20px;display:block;color:#3a342a;stroke-width:2.5}
+.header-icon .btn-fallback{display:none;font-size:16px;line-height:1}
 .warung-name{font-size:20px;font-weight:700;letter-spacing:-0.3px;line-height:1.2;overflow:hidden;text-overflow:ellipsis}
 .warung-status{font-size:13px;opacity:0.9;margin-top:2px;display:flex;align-items:center;gap:6px}
 .dot{width:7px;height:7px;background:#6fcf97;border-radius:50%;display:inline-block;box-shadow:0 0 0 2px rgba(111,207,151,0.25)}
