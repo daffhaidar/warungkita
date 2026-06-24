@@ -1,0 +1,295 @@
+/* ===== WarungKita - Responsive + PWA-Ready ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#FDFBF7;
+  --sage:#8b7e6a;
+  --sage-dark:#6f6253;
+  --sage-light:#a0937e;
+  --ink:#1a1814;
+  --ink-soft:#5a5245;
+  --line:#e8e3d9;
+  --chip:#f0ede6;
+  --green:#6fcf97;
+  --red:#eb5757;
+  --radius:32px;
+  --shadow:0 24px 80px rgba(0,0,0,0.08),0 8px 32px rgba(0,0,0,0.04);
+}
+/* CRITICAL: lock the outer viewport so .phone stays perfectly solid during
+   Android Chrome URL bar collapse/expand gestures. The flex centering + body
+   scroll chain caused the entire UI to drift up/down on touch. We instead
+   use fixed positioning: the body becomes a single-positioned wrapper, .phone
+   fills the entire viewport (minus safe-area), and inner .chat-area handles
+   scrolling. */
+html,body{
+  height:100%;
+  overflow:hidden;
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  width:100%;
+  overscroll-behavior:none;
+  touch-action:manipulation;
+}
+body{
+  font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#FDFBF7;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+}
+.phone{
+  width:100%;max-width:420px;margin:0 auto;background:var(--bg);
+  border-radius:0;overflow:hidden;position:relative;
+  height:100%;display:flex;flex-direction:column;
+  box-shadow:var(--shadow);
+}
+/* Re-add rounded corners when there's enough height (>= 700px) */
+@media (min-height:700px){
+  body{padding:16px;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom))}
+  .phone{border-radius:var(--radius);height:calc(100% - 32px);max-height:900px}
+}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#8b7e6a,#a0937e);padding:20px 20px 16px;color:#fff;flex-shrink:0;position:relative}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;min-height:36px}
+.header-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0;overflow:hidden}
+.header-title{font-size:13px;font-weight:500;opacity:0.85;letter-spacing:0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+/* Grid override for modern browsers */
+@supports (display: grid) {
+  .header-top{display:grid;grid-template-columns:1fr auto;gap:8px}
+}
+.header-icon-btn{
+  width:36px;height:36px;
+  background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.35);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform 0.15s,background 0.15s;
+  flex-shrink:0;
+}
+.header-icon-btn:active{transform:scale(0.92);background:rgba(255,255,255,0.3)}
+.header-icon-btn svg{width:18px;height:18px;display:none;color:#fff;stroke-width:2.4}
+.header-icon-btn .btn-fallback{display:block;font-size:16px;line-height:1}
+.tutup-btn{padding:6px 14px;background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.35);border-radius:16px;color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background 0.2s;-webkit-tap-highlight-color:transparent}
+.tutup-btn:active{background:rgba(255,255,255,0.35)}
+/* GEAR ICON — solid white circle + visible dark SVG for contrast */
+.header-icon{
+  width:36px;height:36px;
+  background:#fff;border:2px solid #fff;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  box-shadow:0 2px 10px rgba(0,0,0,0.25);
+  -webkit-tap-highlight-color:transparent;
+  transition:transform 0.15s,box-shadow 0.15s;
+  flex-shrink:0;
+}
+.header-icon:active{transform:scale(0.92);box-shadow:0 1px 4px rgba(0,0,0,0.25)}
+.header-icon svg{width:20px;height:20px;display:none;color:#3a342a;stroke-width:2.5}
+.header-icon .btn-fallback{display:block;font-size:16px;line-height:1}
+.warung-name{font-size:20px;font-weight:700;letter-spacing:-0.3px;line-height:1.2;overflow:hidden;text-overflow:ellipsis}
+.warung-status{font-size:13px;opacity:0.9;margin-top:2px;display:flex;align-items:center;gap:6px}
+.dot{width:7px;height:7px;background:#6fcf97;border-radius:50%;display:inline-block;box-shadow:0 0 0 2px rgba(111,207,151,0.25)}
+.dot.merah{background:#eb5757;box-shadow:0 0 0 2px rgba(235,87,87,0.25)}
+
+/* QUICK ACTIONS */
+.quick-actions{
+  display:flex;gap:8px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;
+  flex-shrink:0;-webkit-overflow-scrolling:touch;
+  position:relative;scroll-behavior:smooth;
+}
+/* Right-edge fade indicator — only when content overflows */
+.quick-actions:not(.no-scroll)::after{
+  content:"";position:absolute;top:0;right:0;bottom:0;width:48px;
+  background:linear-gradient(to right,rgba(253,251,247,0) 0%,rgba(253,251,247,0.95) 70%,var(--bg) 100%);
+  pointer-events:none;border-radius:0 var(--radius) 0 0;
+  transition:opacity 0.2s;
+}
+/* Hide fade when scrolled to end OR when no scroll needed */
+.quick-actions.scrolled-end::after,.quick-actions.no-scroll::after{opacity:0}
+.q-chip-chevron{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;
+  background:transparent;color:var(--sage);cursor:pointer;border:none;
+  flex-shrink:0;-webkit-tap-highlight-color:transparent;
+  margin-left:auto;align-self:center;transition:background 0.2s;
+}
+.q-chip-chevron:active{background:var(--chip)}
+.quick-actions::-webkit-scrollbar{display:none}
+.q-chip{padding:8px 14px;background:var(--chip);border-radius:20px;font-size:12px;color:var(--ink-soft);white-space:nowrap;border:none;cursor:pointer;font-family:inherit;font-weight:500;transition:background 0.2s;-webkit-tap-highlight-color:transparent}
+.q-chip:active{background:#e3dcd0}
+
+/* CHAT AREA */
+.chat-area{flex:1;overflow-y:auto;padding:12px 16px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.chat-area::-webkit-scrollbar{width:0}
+.date-label{text-align:center;font-size:11px;color:#b0a89a;margin-bottom:12px;font-weight:500}
+
+/* MESSAGES */
+.msg-row{display:flex;margin-bottom:10px}
+.msg-row.in{justify-content:flex-start}
+.msg-row.out{justify-content:flex-end}
+.msg{max-width:85%;padding:11px 15px;border-radius:20px;font-size:14px;line-height:1.5;position:relative;word-break:break-word;overflow-wrap:break-word}
+.msg.in{background:#f0ede6;color:var(--ink);border-bottom-left-radius:6px}
+.msg.out{background:var(--sage);color:#fff;border-bottom-right-radius:6px}
+.msg-time{font-size:10px;color:inherit;opacity:0.55;text-align:right;margin-top:3px}
+.msg.out .msg-time{color:rgba(255,255,255,0.7)}
+.msg.in .msg-time{color:#8b8b8b}
+.msg.bot{background:#fff;border:1.5px solid var(--line);border-bottom-left-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.03)}
+.msg.bot .bot-name{font-weight:600;color:var(--sage);font-size:12px;margin-bottom:3px}
+.check-green{display:inline-block;width:14px;height:14px;background:var(--green);border-radius:50%;color:#fff;font-size:9px;text-align:center;line-height:14px;margin-left:4px;vertical-align:middle}
+
+/* BUTTONS IN CHAT */
+.chat-btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.ok-btn{padding:6px 18px;background:var(--sage);color:#fff;border-radius:20px;font-size:13px;font-weight:500;border:none;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.ok-btn:active{transform:scale(0.95)}
+.koreksi-btn{padding:6px 14px;background:transparent;color:var(--sage);border-radius:20px;font-size:13px;font-weight:500;border:1.5px solid #d4cdbe;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.koreksi-btn:active{transform:scale(0.95)}
+
+/* INPUT BAR */
+.input-bar{padding:10px 16px calc(18px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center;flex-shrink:0;background:var(--bg);border-top:1px solid var(--line)}
+.input-field{flex:1;min-width:0;padding:12px 18px;border:1.5px solid var(--line);border-radius:24px;font-family:inherit;font-size:14px;background:#fff;color:var(--ink);outline:none;transition:border 0.2s}
+.input-field:focus{border-color:var(--sage)}
+.input-field::placeholder{color:#c4bdb0}
+.send-btn{width:46px;height:46px;background:var(--sage);border-radius:50%;border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.15s;-webkit-tap-highlight-color:transparent}
+.send-btn:active{transform:scale(0.9)}
+.send-btn:disabled{background:#d4cdbe;cursor:not-allowed}
+
+/* ONBOARDING */
+.onboarding{display:none;padding:32px 24px;text-align:center;flex:1;justify-content:center;flex-direction:column}
+.onboarding.active{display:flex}
+.onboard-icon{font-size:64px;margin-bottom:16px;line-height:1}
+.onboard-icon img{width:96px;height:96px;display:block;margin:0 auto 16px}
+.onboard-title{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-0.3px}
+.onboard-desc{font-size:14px;color:#7a7468;line-height:1.6;margin-bottom:24px}
+.start-btn{padding:14px 40px;background:var(--sage);color:#fff;border:none;border-radius:28px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:transform 0.2s;-webkit-tap-highlight-color:transparent}
+.start-btn:active{transform:scale(0.96)}
+.tagline{font-size:12px;color:#b0a89a;margin-top:12px}
+.setup-input{width:100%;padding:14px 18px;border:1.5px solid var(--line);border-radius:16px;font-family:inherit;font-size:16px;background:#fff;color:var(--ink);outline:none;text-align:center;transition:border 0.2s}
+.setup-input:focus{border-color:var(--sage)}
+.main-chat{display:none;flex:1;flex-direction:column;overflow:hidden}
+.main-chat.active{display:flex}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:100;justify-content:center;align-items:center;padding:24px}
+.modal-overlay.active{display:flex}
+.modal-box{background:var(--bg);border-radius:24px;padding:28px 24px 20px;max-width:360px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.15);animation:modalIn 0.25s ease;max-height:85vh;overflow-y:auto}
+@keyframes modalIn{from{transform:scale(0.94);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-icon{font-size:48px;margin-bottom:12px}
+.modal-title{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.modal-desc{font-size:14px;color:#7a7468;line-height:1.5;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.modal-btn{padding:12px 24px;border-radius:24px;font-size:15px;font-weight:600;border:none;cursor:pointer;font-family:inherit;min-width:120px;transition:transform 0.2s;-webkit-tap-highlight-color:transparent}
+.modal-btn:active{transform:scale(0.96)}
+.modal-btn.primary{background:var(--sage);color:#fff}
+.modal-btn.secondary{background:var(--chip);color:var(--ink-soft)}
+.modal-btn.green{background:var(--green);color:var(--ink)}
+
+/* REKAP TABLE */
+.rekap-card{background:#f8f6f1;border-radius:16px;padding:12px 16px;text-align:left}
+.r-line{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;gap:8px}
+.r-lbl{color:var(--ink-soft);flex:1}
+.r-val{font-weight:600;color:var(--ink);text-align:right;white-space:nowrap}
+.r-untung .r-lbl,.r-untung .r-val{color:#2f7d4f;font-weight:700}
+.rekap-divider{height:1px;background:var(--line);margin:6px 0}
+.rekap-share-row{display:flex;gap:8px;margin-top:12px}
+
+/* PROGRESS BAR */
+.progress-wrap{margin:6px 0 2px}
+.progress-bar{width:100%;height:10px;background:#e8e3d9;border-radius:8px;overflow:hidden;position:relative}
+.progress-fill{height:100%;background:linear-gradient(90deg,#6fcf97,#3a9d63);border-radius:8px;transition:width 0.4s ease}
+.progress-bar.over .progress-fill{background:linear-gradient(90deg,#f0c75e,#d9a441)}
+.progress-label{font-size:11px;color:var(--ink-soft);margin-top:3px;text-align:right}
+
+/* RIWAYAT ITEM */
+.riwayat-item{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:6px 0;font-size:12px}
+.riwayat-id{font-size:11px;color:#b0a89a;margin-bottom:3px;font-weight:500}
+.riwayat-line{color:var(--ink-soft);line-height:1.6}
+.riwayat-total{color:var(--ink);margin-top:3px;padding-top:3px;border-top:1px dashed var(--line)}
+
+/* CLOSED OVERLAY */
+.closed-overlay{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:50;backdrop-filter:blur(4px);justify-content:center;align-items:center;flex-direction:column;padding:32px;color:#fff;text-align:center;border-radius:var(--radius)}
+.closed-overlay.active{display:flex}
+.closed-icon{font-size:56px;margin-bottom:16px;opacity:0.9}
+.closed-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.closed-desc{font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:20px}
+.buka-btn{padding:14px 40px;background:var(--green);color:var(--ink);border:none;border-radius:28px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform 0.2s;-webkit-tap-highlight-color:transparent}
+.buka-btn:active{transform:scale(0.96)}
+
+/* PWA INSTALL BANNER */
+.install-banner{display:none;position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));background:var(--ink);color:#fff;border-radius:18px;padding:14px 16px;z-index:200;box-shadow:0 12px 40px rgba(0,0,0,0.25);align-items:center;gap:12px;animation:slideUp 0.3s ease}
+.install-banner.show{display:flex}
+@keyframes slideUp{from{transform:translateY(120%);opacity:0}to{transform:translateY(0);opacity:1}}
+.install-banner-icon{width:44px;height:44px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.install-banner-text{flex:1;min-width:0}
+.install-banner-title{font-size:13px;font-weight:600;line-height:1.2}
+.install-banner-desc{font-size:11px;opacity:0.75;margin-top:2px}
+.install-banner-btn{padding:8px 14px;background:var(--sage);color:#fff;border:none;border-radius:14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.install-banner-close{background:transparent;border:none;color:#fff;opacity:0.5;font-size:18px;cursor:pointer;padding:4px;-webkit-tap-highlight-color:transparent}
+
+/* RESPONSIVE — TABLET & DESKTOP */
+@media(min-width:768px){
+  body{padding:24px}
+  .phone{max-width:440px;height:min(820px,calc(100vh - 48px))}
+}
+@media(min-width:1024px){
+  body{padding:32px;background:linear-gradient(135deg,#f5efe6 0%,#ede5d6 100%)}
+  .phone{max-width:440px}
+}
+
+/* RESPONSIVE — MOBILE BREAKPOINTS */
+@media(max-width:480px){
+  body{padding:0}
+  .phone{border-radius:0;height:100dvh;height:100vh;box-shadow:none}
+  .closed-overlay{border-radius:0}
+}
+@media(max-width:380px){
+  /* Small phones — squeeze padding + font sizes */
+  .header{padding:16px 14px 12px}
+  .header-title{font-size:12px}
+  .warung-name{font-size:18px}
+  .warung-status{font-size:12px}
+  .header-icon{width:32px;height:32px}
+  .header-icon svg{width:16px;height:16px}
+  .tutup-btn{padding:5px 10px;font-size:11px}
+  .quick-actions{padding:10px 12px}
+  .q-chip{padding:7px 12px;font-size:11px}
+  .chat-area{padding:10px 12px}
+  .msg{font-size:13px;padding:10px 13px}
+  .input-bar{padding:8px 12px calc(14px + env(safe-area-inset-bottom));gap:6px}
+  .input-field{padding:10px 14px;font-size:13px}
+  .send-btn{width:42px;height:42px;font-size:16px}
+  .modal-box{padding:24px 18px 16px}
+  .modal-title{font-size:16px}
+  .modal-desc{font-size:13px}
+  .modal-btn{padding:10px 20px;font-size:14px;min-width:100px}
+}
+@media(max-width:320px){
+  /* iPhone SE / very small */
+  .onboard-icon{font-size:48px}
+  .onboard-title{font-size:18px}
+  .onboard-desc{font-size:13px}
+  .start-btn{padding:12px 32px;font-size:14px}
+  .warung-name{font-size:16px}
+  .header-icon{width:30px;height:30px}
+  .header-icon svg{width:15px;height:15px}
+}
+@media(max-height:600px){
+  /* Short screens (landscape phone) */
+  .phone{height:100vh;border-radius:0;box-shadow:none}
+  .onboarding{padding:20px 24px}
+  .onboard-icon{font-size:48px;margin-bottom:8px}
+  .onboard-desc{margin-bottom:16px}
+}
+@media(prefers-color-scheme:dark){
+  /* Dark mode hint (not full impl, just safe defaults) */
+  :root{--bg:#FDFBF7} /* keep cream for now */
+}
+
+/* iOS input zoom prevention */
+@supports(-webkit-touch-callout:none){
+  .input-field,.setup-input{font-size:16px}
+}
+
+/* Reduce motion for accessibility */
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+}
