@@ -833,7 +833,7 @@ function parseTransaksi(text) {
   // If any item has no known price (custom needed), ask first
   const needPrice = items.find(i => i.needsPrice);
   if (needPrice) {
-    askForPrice(needPrice, items);
+    askForPrice(needPrice, items, utangName);
     return;
   }
 
@@ -896,10 +896,11 @@ function parseTransaksi(text) {
 
 // Ask user for price AND default satuan of an unknown item
 // User can respond: "15000" (keep default), "15000 per kg", or "20rb/ekor"
-function askForPrice(pendingItem, fullItems) {
+function askForPrice(pendingItem, fullItems, utangName) {
   state.pendingPrice = {
     pending: pendingItem,
     fullItems: fullItems,
+    utangName: utangName || null,
   };
   // Pick a user-friendly example satuan to surface, falling back to the parsed one
   const contohSatuan = pendingItem.satuan && pendingItem.satuan !== 'pcs' ? pendingItem.satuan : 'pcs';
@@ -1023,8 +1024,8 @@ function handlePendingPriceResponse(text) {
 
   state.pendingPrice = null;
   saveState();
-  // Continue with the transaction confirmation
-  finalizeTransaksi(pending.fullItems);
+  // Continue with the transaction confirmation (carry utangName through)
+  finalizeTransaksi(pending.fullItems, pending.utangName);
 }
 
 // "10 apa?" — user answers which satuan they meant
@@ -1083,9 +1084,9 @@ function handlePendingFuzzyResponse(text) {
   }
 }
 
-function finalizeTransaksi(items) {
+function finalizeTransaksi(items, utangName) {
   const total = items.reduce((s, i) => s + i.total, 0);
-  state.pendingTx = { items, total, waktu: new Date().toISOString() };
+  state.pendingTx = { items, total, waktu: new Date().toISOString(), utangName: utangName || null };
   saveState();
 
   let html = `Oke siap! Mau catat nih:<br><br>`;
