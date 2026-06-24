@@ -97,15 +97,15 @@ body{
   flex-shrink:0;-webkit-overflow-scrolling:touch;
   position:relative;scroll-behavior:smooth;
 }
-/* Right-edge fade indicator — pseudo overlay for reliable rendering */
-.quick-actions::after{
+/* Right-edge fade indicator — only when content overflows */
+.quick-actions:not(.no-scroll)::after{
   content:"";position:absolute;top:0;right:0;bottom:0;width:48px;
   background:linear-gradient(to right,rgba(253,251,247,0) 0%,rgba(253,251,247,0.95) 70%,var(--bg) 100%);
   pointer-events:none;border-radius:0 var(--radius) 0 0;
   transition:opacity 0.2s;
 }
-/* Hide fade when scrolled to end */
-.quick-actions.scrolled-end::after{opacity:0}
+/* Hide fade when scrolled to end OR when no scroll needed */
+.quick-actions.scrolled-end::after,.quick-actions.no-scroll::after{opacity:0}
 .q-chip-chevron{
   display:inline-flex;align-items:center;justify-content:center;
   width:28px;height:28px;border-radius:50%;

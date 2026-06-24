@@ -156,8 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const qa = document.getElementById('quickActions');
   if (qa) {
     const updateScroll = () => {
+      const needsScroll = qa.scrollWidth > qa.clientWidth + 4;
       const atEnd = qa.scrollLeft + qa.clientWidth >= qa.scrollWidth - 4;
       qa.classList.toggle('scrolled-end', atEnd);
+      qa.classList.toggle('no-scroll', !needsScroll);
     };
     qa.addEventListener('scroll', updateScroll, {passive:true});
     setTimeout(updateScroll, 300);
