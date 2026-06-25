@@ -286,11 +286,7 @@ function bindEvents() {
     setupWarungAPI(nama); // tell backend
     showChat();
     // NEW: stok prompt as the FIRST message — wait for input before showing quick actions
-    addBotMsg(
-      `Halo! Aku bakal bantu catat jualan di <strong>${esc(nama)}</strong>. ` +
-      `Mau isi stok dulu ga? Misal: <em>"stok beras 10kg, minyak 2l"</em>. ` +
-      `Atau ketik <strong>"skip"</strong> kalo langsung mulai.`
-    );
+    addBotMsg(`Haloo! Aku bantu catat jualan <strong>${esc(nama)}</strong>. Stok dulu? <em>"stok soto 20 mangkok"</em> — atau <strong>"skip"</strong>`);
     // Hide quick actions until user responds
     setQuickActionsVisible(false);
   };
@@ -309,31 +305,18 @@ function bindEvents() {
   document.querySelectorAll('.q-chip').forEach(btn => {
     btn.onclick = () => {
       const cmd = btn.dataset.cmd;
-      const cmds = {
-        catat: 'Contoh: "jual nasi goreng 3, es teh 2"',
-        laporan: 'total hari ini',
-        stok: 'stok',
-        target: 'target',
-        tutup: 'tutup',
-        riwayat: 'riwayat',
-        pengeluaran: 'beli minyak 20rb',
-        utang: 'utang',
-      };
       if (cmd === 'tutup') { showTutupModal(); return; }
-      if (cmd === 'stok' || cmd === 'target' || cmd === 'laporan' || cmd === 'riwayat' || cmd === 'pengeluaran' || cmd === 'utang') {
-        const map = {
-          stok: 'stok',
-          target: 'target',
-          laporan: 'total hari ini',
-          riwayat: 'riwayat',
-          pengeluaran: 'pengeluaran',
-          utang: 'utang',
-        };
-        processUserMsg(map[cmd] || cmd);
+      if (cmd === 'jual') {
+        document.getElementById('chatInput').placeholder = 'Ketik: "jual soto 3"';
+        document.getElementById('chatInput').focus();
         return;
       }
-      document.getElementById('chatInput').placeholder = cmds[cmd] || 'Ketik di sini...';
-      document.getElementById('chatInput').focus();
+      const map = {
+        stok: 'stok',
+        laporan: 'total hari ini',
+        utang: 'utang',
+      };
+      processUserMsg(map[cmd] || cmd);
     };
   });
 
@@ -366,12 +349,39 @@ function setQuickActionsVisible(visible) {
   qa.style.display = visible ? 'flex' : 'none';
 }
 
+// ---- QUICK-SELL BUTTONS ----
+// Render quick-sell buttons from stok items
+function renderQuickSell() {
+  const qs = document.getElementById('quickSell');
+  if (!qs) return;
+  const keys = Object.keys(state.stok);
+  if (!keys.length || !state.buka) {
+    qs.style.display = 'none';
+    return;
+  }
+  let html = '';
+  keys.forEach(k => {
+    const s = state.stok[k];
+    const satuanEmoji = s.satuan === 'mangkok' ? '🍜' : s.satuan === 'kg' ? '⚖️' : s.satuan === 'gelas' ? '🥤' : '📦';
+    html += `<button class="qs-btn" onclick="quickSell('${esc(s.nama)}')">${satuanEmoji} ${esc(s.nama)}</button>`;
+  });
+  qs.innerHTML = html;
+  qs.style.display = 'flex';
+}
+
+function quickSell(nama) {
+  const input = document.getElementById('chatInput');
+  input.value = `jual ${nama.toLowerCase()} `;
+  input.focus();
+}
+
 function showChat() {
   document.getElementById('onboarding').classList.remove('active');
   document.getElementById('setup').classList.remove('active');
   document.getElementById('main-chat').classList.add('active');
   document.getElementById('displayNama').textContent = state.namaWarung;
   document.getElementById('chatInput').focus();
+  renderQuickSell();
 }
 
 // ---- CHAT RENDERING ----
@@ -438,7 +448,7 @@ function processUserMsg(text) {
   if (!text.trim()) return;
 
   if (!state.buka) {
-    addBotMsg('Warung lagi tutup nih. Ketik <strong>"buka"</strong> kalo mau mulai jualan lagi 🙂');
+    addBotMsg('Warung lagi tutup. Ketik <strong>"buka"</strong> buat mulai lagi 🙂');
     return;
   }
 
@@ -531,7 +541,8 @@ function handleFirstSetup(text) {
     state.setupDone = true;
     saveState();
     setQuickActionsVisible(true);
-    addBotMsg(`Oke sip langsung mulai ya! 🚀<br><br>📌 <span style="font-size:12px;color:#b0a89a">Contoh: "jual nasi goreng 3" → "target 500rb" → "tutup"</span>`);
+    renderQuickSell();
+    addBotMsg(`Oke sip langsung mulai 🚀<br><span style="font-size:12px;color:#b0a89a">"jual soto 3" → "target 500rb" → "tutup"</span>`);
     return;
   }
   // Treat as stok input
@@ -548,17 +559,18 @@ function handleFirstSetup(text) {
       state.setupDone = true;
       saveState();
       setQuickActionsVisible(true);
+      renderQuickSell();
       let html = `✅ Stok awal tercatat:<br>`;
       items.forEach(i => {
         html += `&nbsp;&nbsp;📦 ${esc(i.nama)}: <strong>${i.qty}${i.satuan}</strong><br>`;
       });
-      html += `<br>Mantap! Udah siap catat jualan. Coba ketik <strong>"jual ${esc(items[0].nama.toLowerCase())} 1"</strong> dulu yuk 🙂`;
+      html += `<br>✅ Udah siap. Coba <strong>"jual ${esc(items[0].nama.toLowerCase())} 1"</strong> yuk 🙂`;
       addBotMsg(html);
       return;
     }
   }
   // Fallback: didn't parse as anything
-  addBotMsg(`Belum ngerti nih 😅<br><br>Ketik <strong>"stok [nama barang] [jumlah]"</strong> (contoh: "stok telur 10kg"),<br>atau <strong>"skip"</strong> kalo mau langsung mulai.`);
+  addBotMsg(`Belum ngerti 😅 Ketik: <strong>"stok soto 20 mangkok"</strong> atau <strong>"skip"</strong>`);
 }
 
 async function tryBackend(text) {
@@ -665,7 +677,7 @@ function processCommand(text) {
   // "kembalian" alone → recalculate from last transaction
   if (t === 'kembalian') {
     if (state.pendingBayar && state.pendingBayar.total > 0) {
-      addBotMsg(`Total terakhir: <strong>${rupiah(state.pendingBayar.total)}</strong><br>Pembeli bayar berapa? Tinggal sebut nominalnya, misal <strong>"50rb"</strong>`);
+      addBotMsg(`Total: <strong>${rupiah(state.pendingBayar.total)}</strong>. Bayar berapa? Sebut nominalnya, misal <strong>"50rb"</strong>`);
     } else {
       addBotMsg('Belum ada transaksi terakhir. Coba <strong>"bayar [total] [uang]"</strong>, misal: <strong>"bayar 35000 50000"</strong>');
     }
@@ -685,7 +697,7 @@ function processCommand(text) {
   // "bayar" alone — prompt for the last transaction's total
   if (t === 'bayar') {
     if (state.pendingBayar && state.pendingBayar.total > 0) {
-      addBotMsg(`Total transaksi terakhir: <strong>${rupiah(state.pendingBayar.total)}</strong><br>Pembeli bayar berapa? Sebut nominalnya, misal <strong>"50rb"</strong>`);
+      addBotMsg(`Total: <strong>${rupiah(state.pendingBayar.total)}</strong>. Bayar berapa? Sebut nominalnya`);
     } else {
       addBotMsg('Format: <strong>"bayar [total] [uang]"</strong><br>Contoh: <strong>"bayar 35000 50000"</strong> → kembalian Rp15.000');
     }
@@ -756,7 +768,7 @@ function processCommand(text) {
 
   // "jual" alone
   if (t === 'jual' || t === 'jual dong' || t === 'catat') {
-    addBotMsg('Mau jual apa nih? 🙂<br>Contoh: <strong>"jual nasi goreng 3"</strong> atau <strong>"jual nasi goreng 2, es teh 3"</strong>');
+    addBotMsg('Mau jual apa? 🙂 Contoh: <strong>"jual soto 3"</strong> atau <strong>"jual soto 2, es teh 3"</strong>');
     return;
   }
 
@@ -771,7 +783,7 @@ function processCommand(text) {
   }
 
   // Default — random / unknown text
-  addBotMsg(`Hmm, aku gak ngerti maksudnya 😅<br><br>Coba ketik terpisah aja:<br>• <strong>"jual kopi 2 bungkus"</strong> buat catat jualan<br>• <strong>"beli gula 10rb"</strong> buat catat pengeluaran<br>• <strong>"bayar 35000 50000"</strong> buat hitung kembalian<br><br>Atau ketik <strong>"help"</strong> buat liat semua perintah.`);
+  addBotMsg(`Ga ngerti 😅 Coba:<br>• <strong>"jual soto 3 mangkok"</strong> — catat jualan<br>• <strong>"bayar 35000 50000"</strong> — hitung kembalian<br>Ketik <strong>"help"</strong> buat semua perintah`);
 }
 
 // ---- TRANSAKSI ----
@@ -886,12 +898,11 @@ function parseTransaksi(text) {
       items: items,
       missing: missingStok,
     };
-    let warnHtml = '⚠️ Ada item yang belum tercatat di stok nih:<br><br>';
+    let warnHtml = '⚠️ Item belum tercatat di stok:<br><br>';
     missingStok.forEach(i => {
       warnHtml += `❓ <strong>${esc(i.nama)}</strong> — ga ada di penyimpanan<br>`;
     });
-    warnHtml += `<br>📌 Ketik <strong>"stok [nama] [jumlah]"</strong> buat catet stok dulu<br>`;
-    warnHtml += `Atau ketik <strong>"lanjut"</strong> kalo tetep mau jual tanpa stok`;
+    warnHtml += `<br>Ketik <strong>"stok ${esc(missingStok[0].nama.toLowerCase())} [jumlah]"</strong> atau <strong>"lanjut"</strong>`;
     addBotMsg(warnHtml);
     return;
   }
@@ -900,7 +911,7 @@ function parseTransaksi(text) {
   state.pendingTx = { items, total, waktu: new Date().toISOString(), utangName };
   saveState();
 
-  let html = 'Mau catat nih:<br><br>';
+  let html = 'Mau catat:<br><br>';
   items.forEach(i => {
     html += `✅ <strong>${esc(i.nama)}</strong>: ${i.qty} ${i.satuan} × ${rupiah(i.harga)} = <strong>${rupiah(i.total)}</strong><br>`;
   });
@@ -914,7 +925,7 @@ function parseTransaksi(text) {
     }
   });
 
-  html += '<br><br>Kalo bener, pencet <strong>"OK"</strong> ya';
+  html += '<br><br>OK? 👇';
 
   // Render with buttons
   const area = document.getElementById('chatArea');
@@ -944,12 +955,8 @@ function askForPrice(pendingItem, fullItems, utangName) {
   // Pick a user-friendly example satuan to surface, falling back to the parsed one
   const contohSatuan = pendingItem.satuan && pendingItem.satuan !== 'pcs' ? pendingItem.satuan : 'pcs';
   addBotMsg(
-    `Belum tau harga <strong>${esc(pendingItem.nama)}</strong> nih 🤔<br><br>` +
-    `💰 Harga <strong>${esc(pendingItem.nama)}</strong> per apa? Contoh:<br>` +
-    `&nbsp;&nbsp;• <strong>"15000 per kg"</strong><br>` +
-    `&nbsp;&nbsp;• <strong>"5000/butir"</strong><br>` +
-    `&nbsp;&nbsp;• <strong>"3500/pcs"</strong><br>` +
-    `&nbsp;&nbsp;• Atau langsung: <strong>"15000"</strong> (per ${esc(contohSatuan)})`
+    `💰 Harga <strong>${esc(pendingItem.nama)}</strong> per apa?<br>` +
+    `Contoh: <strong>"15000 per kg"</strong>, <strong>"5000/butir"</strong>, atau langsung <strong>"15000"</strong>`
   );
 }
 
@@ -1056,8 +1063,7 @@ function handlePendingPriceResponse(text) {
   const stillNeeds = pending.fullItems.find(i => i.needsPrice);
   if (stillNeeds) {
     state.pendingPrice = { pending: stillNeeds, fullItems: pending.fullItems };
-    addBotMsg(`Oke noted ✅ ${esc(pending.pending.nama)} = ${rupiah(Math.round(priceNum))}/${esc(satuan)}.<br>` +
-      `Sekarang harga <strong>${esc(stillNeeds.nama)}</strong> per ${esc(stillNeeds.satuan)} berapa?`);
+    addBotMsg(`Oke ✅ ${esc(pending.pending.nama)} = ${rupiah(Math.round(priceNum))}/${esc(satuan)}. Harga <strong>${esc(stillNeeds.nama)}</strong> per ${esc(stillNeeds.satuan)}?`);
     return;
   }
 
@@ -1128,7 +1134,7 @@ function finalizeTransaksi(items, utangName) {
   state.pendingTx = { items, total, waktu: new Date().toISOString(), utangName: utangName || null };
   saveState();
 
-  let html = `Oke siap! Mau catat nih:<br><br>`;
+  let html = `Oke! Mau catat:<br><br>`;
   items.forEach(i => {
     html += `✅ <strong>${esc(i.nama)}</strong>: ${i.qty} ${i.satuan} × ${rupiah(i.harga)} = <strong>${rupiah(i.total)}</strong><br>`;
   });
@@ -1139,7 +1145,7 @@ function finalizeTransaksi(items, utangName) {
       html += `<br>📦 Stok ${esc(i.nama)}: ${state.stok[key].qty}${state.stok[key].satuan} → ${sisa}${state.stok[key].satuan}`;
     }
   });
-  html += '<br><br>Kalo bener, pencet <strong>"OK"</strong> ya';
+  html += '<br><br>OK? 👇';
 
   const area = document.getElementById('chatArea');
   const row = document.createElement('div');
@@ -1184,6 +1190,8 @@ function confirmTx(btn) {
     recordUtang(tx.utangName, tx.items, tx.total);
   }
 
+  renderQuickSell();
+
   const totalHariIni = state.transaksi.reduce((s, t) => s + t.total, 0);
   let html = `✅ <strong>Tersimpan!</strong> (ID: #${id})<br>📊 Total hari ini: <strong>${rupiah(totalHariIni)}</strong>`;
   if (state.targetHarian > 0) {
@@ -1194,7 +1202,7 @@ function confirmTx(btn) {
 
   // Offer to calculate change if total > 0
   if (tx.total > 0) {
-    addBotMsg(`💰 Pembeli bayar berapa? Tinggal sebut nominalnya aja, misal <strong>"${tx.total >= 50000 ? '50rb' : (tx.total * 1.5 < 100000 ? Math.round(tx.total * 1.5 / 1000) + 'rb' : '50000')}"</strong>, atau ketik <strong>"bayar"</strong> buat input manual 🙂`);
+    addBotMsg(`💰 Pembeli bayar berapa? Sebut nominalnya, misal <strong>"50rb"</strong>, atau ketik <strong>"bayar"</strong> 🙂`);
   }
 }
 
@@ -1343,10 +1351,7 @@ function setStok(text) {
     if (!existing && !hasSatuanToken && !hasInlineHarga) {
       // Ask user which satuan they want
       state.pendingStokQuestion = { items, originalText: text };
-      addBotMsg(
-        `<strong>${esc(it.nama)}</strong> ${it.qty} apa nih? 📦<br><br>` +
-        `Bilang aja satuannya, misal: <strong>"pcs"</strong>, <strong>"bungkus"</strong>, <strong>"dus"</strong>, <strong>"kg"</strong>, dll.`
-      );
+      addBotMsg(`${esc(it.nama)} ${it.qty} apa? 📦 Bilang satuannya: <strong>"pcs"</strong>, <strong>"bungkus"</strong>, <strong>"kg"</strong>...`);
       return;
     }
   });
@@ -1373,13 +1378,13 @@ function applyStokItems(items, originalText) {
   });
   saveState();
   addBotMsg(html);
+  renderQuickSell();
 
   // AUTO-RESUME: if there's a pending stock warning, offer to continue the sale
   if (state.pendingStockWarning) {
     const first = state.pendingStockWarning.items[0];
     addBotMsg(
-      `Stok udah dicatat! ✅<br>` +
-      `Mau lanjut jual <strong>${esc(first.nama)} ${first.qty}${first.satuan}</strong>? Ketik <strong>"lanjut"</strong> ya 🙂`
+      `Stok udah dicatat ✅ Mau lanjut jual <strong>${esc(first.nama)} ${first.qty}${first.satuan}</strong>? Ketik <strong>"lanjut"</strong>`
     );
   }
 }
@@ -1387,7 +1392,7 @@ function applyStokItems(items, originalText) {
 function showStok() {
   const keys = Object.keys(state.stok);
   if (!keys.length) {
-    addBotMsg('Belum ada stok yang tercatat. Ketik <strong>"stok telur 10kg"</strong> buat mulai.');
+    addBotMsg('Belum ada stok. Ketik <strong>"stok soto 20 mangkok"</strong> buat mulai');
     return;
   }
   let html = '📦 <strong>Stok Sekarang:</strong><br>';
@@ -2143,7 +2148,7 @@ function finalizeTutup() {
   document.getElementById('btnSend').disabled = true;
   document.getElementById('closedOverlay').classList.add('active');
 
-  addBotMsg('🌙 Warung ditutup. Semua data udah tersimpan. Besok tinggal bilang <strong>"buka"</strong> kalo mau lanjut!');
+  addBotMsg('🌙 Warung ditutup. Data aman tersimpan. Besok tinggal <strong>"buka"</strong>!');
 }
 
 function updateUIForOpen() {
@@ -2160,6 +2165,7 @@ function bukaWarung() {
   saveState();
 
   updateUIForOpen();
+  renderQuickSell();
 
   const total = state.transaksi.reduce((s, t) => s + t.total, 0);
   let html = `☀️ Warung dibuka lagi!<br>📊 Total hari ini: <strong>${rupiah(total)}</strong>`;
@@ -2172,29 +2178,17 @@ function bukaWarung() {
 
 // ---- HELP ----
 function showHelp() {
-  addBotMsg(`📖 <strong>Yang bisa aku bantu:</strong><br><br>
-📝 <strong>"jual indomie 1 pcs 3500"</strong> — catat jualan (bisa langsung sama harga!)<br>
-&nbsp;&nbsp;&nbsp;<em>atau "jual nasi goreng 3, es teh 2"</em><br>
+  addBotMsg(`📖 <strong>Perintah:</strong><br><br>
+📝 <strong>"jual soto 3"</strong> — catat jualan<br>
 💸 <strong>"beli minyak 20rb"</strong> — catat pengeluaran<br>
-📦 <strong>"stok beras 10kg"</strong> — set stok awal<br>
-📦 <strong>"stok indomie 10 pcs 3500"</strong> — stok sekalian catet harga<br>
-📦 <strong>"stok"</strong> — cek stok sekarang<br>
-🎯 <strong>"target 500rb"</strong> — pasang target harian<br>
-🎯 <strong>"target"</strong> — cek progress<br>
+📦 <strong>"stok soto 20 mangkok"</strong> — set stok<br>
+🎯 <strong>"target 500rb"</strong> — pasang target<br>
 💰 <strong>"bayar 35000 50000"</strong> — hitung kembalian<br>
-&nbsp;&nbsp;&nbsp;<em>support: "bayar 35rb 50rb" atau abis transaksi tinggal sebut nominalnya</em><br>
-💳 <strong>"utang budi indomie 2 3500"</strong> — catat utang atas nama orang<br>
-&nbsp;&nbsp;&nbsp;<em>atau gabung: <strong>"jual rokok 1 pack utang budi"</strong> — jual + catat utang sekaligus</em><br>
-💳 <strong>"utang budi"</strong> — liat detail utang satu orang<br>
-💳 <strong>"utang"</strong> — liat daftar utang<br>
-💵 <strong>"bayar utang budi 5000"</strong> — bayar sebagian<br>
-✅ <strong>"utang lunas budi"</strong> — tandain udah lunas<br>
-📊 <strong>"total hari ini"</strong> — laporan lengkap<br>
-📋 <strong>"riwayat"</strong> — daftar transaksi hari ini<br>
-⚠️ <strong>"cek 0812xxx"</strong> — cek blacklist<br>
-⚠️ <strong>"blacklist 0812xxx"</strong> — tambah blacklist<br>
+💳 <strong>"utang budi soto 2 15000"</strong> — catat utang<br>
+📊 <strong>"total"</strong> — laporan hari ini<br>
+📋 <strong>"riwayat"</strong> — daftar transaksi<br>
 🔒 <strong>"tutup"</strong> — tutup warung + rekap<br>
-📖 <strong>"help"</strong> — liat menu ini lagi`);
+📖 <strong>"help"</strong> — menu ini`);
 }
 
 // ---- MODAL HELPERS ----
