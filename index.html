@@ -162,7 +162,22 @@
   <button class="install-banner-close" id="installClose" aria-label="Tutup">✕</button>
 </div>
 
-<script src="genai.js?v=2"></script>
-<script src="app.js?v=2"></script>
+<script src="genai.js?v=3"></script>
+<!-- WarungKita v3.5 Modular — load order matters (deps flow top-down) -->
+<script src="src/config.js?v=3"></script>
+<script src="src/state.js?v=3"></script>
+<script src="src/pwa.js?v=3"></script>
+<script src="src/chat.js?v=3"></script>
+<script src="src/utils.js?v=3"></script>
+<script src="src/items.js?v=3"></script>
+<script src="src/transactions.js?v=3"></script>
+<script src="src/report.js?v=3"></script>
+<script src="src/pengeluaran.js?v=3"></script>
+<script src="src/utang.js?v=3"></script>
+<script src="src/tutup.js?v=3"></script>
+<script src="src/input.js?v=3"></script>
+<script src="src/events.js?v=3"></script>
+<script src="src/helpers.js?v=3"></script>
+<!-- app.js is now just a loader doc — all logic in src/ modules -->
 </body>
 </html>
