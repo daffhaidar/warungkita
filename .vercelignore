@@ -1,0 +1,25 @@
+# Backend — should NEVER be deployed to Vercel (runs on VPS separately)
+backend/
+
+# Build artifacts
+node_modules/
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Git
+.git/
+.gitignore
+
+# Docs/internal
+docs/
+preview/
+README.md
+backend/
