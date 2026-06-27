@@ -1612,11 +1612,11 @@ function showLaporan() {
   addBotMsg(html);
 
   // GenAI summary — async follow-up
-  if (typeof callBAI === 'function' && typeof buildLaporanPrompt === 'function') {
+  if (typeof callGenAI === 'function' && typeof buildLaporanPrompt === 'function') {
     const loadingId = 'ai-loading-' + Date.now();
     addBotMsg('<span id="' + loadingId + '" style="color:#b0a89a">🤖 AI sedang menganalisis...</span>');
     const prompt = buildLaporanPrompt(state.namaWarung, tx, total, totalPengeluaran, untung, state.targetHarian, sorted);
-    callBAI(prompt).then(summary => {
+    callGenAI([{role:'user',content:prompt}]).then(summary => {
       const el = document.getElementById(loadingId);
       if (summary && el) {
         el.parentElement.innerHTML = '🤖 <strong>Ringkasan AI:</strong><br><br>' + esc(summary);
@@ -2038,7 +2038,7 @@ function showRekap() {
   document.getElementById('btnRekapWA').onclick = shareRekapToWhatsApp;
 
   // GenAI summary — async, loads after modal appears
-  if (typeof callBAI === 'function' && typeof buildRekapPrompt === 'function') {
+  if (typeof callGenAI === 'function' && typeof buildRekapPrompt === 'function') {
     const aiContainer = document.createElement('div');
     aiContainer.className = 'rekap-card';
     aiContainer.style.marginTop = '12px';
@@ -2046,7 +2046,7 @@ function showRekap() {
     document.getElementById('rekapContent').appendChild(aiContainer);
 
     const prompt = buildRekapPrompt(state.namaWarung, tx, total, totalPengeluaran, untung, totalUtang, state.targetHarian, sorted);
-    callBAI(prompt).then(summary => {
+    callGenAI([{role:'user',content:prompt}]).then(summary => {
       if (summary) {
         aiContainer.innerHTML = '<div class="r-line"><span class="r-lbl"><strong>🤖 Ringkasan AI:</strong></span></div><div style="padding:8px 16px;color:#5a5047;font-size:14px;line-height:1.5">' + esc(summary) + '</div>';
       } else {
