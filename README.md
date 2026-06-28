@@ -192,7 +192,7 @@ Setiap kali user membuka laporan harian (`laporan`) atau menutup warung (`tutup`
 ```bash
 # Clone
 git clone https://github.com/daffhaidar/warungkita.git
-cd warungkita/frontend
+cd warungkita
 
 # Development
 python3 -m http.server 8080
@@ -208,14 +208,22 @@ python3 -m http.server 8080
 
 ```
 warungkita/
-├── frontend/
-│   ├── index.html      # SPA shell
-│   ├── style.css        # Tema warm cream + earth tones
-│   ├── app.js           # Semua logika (parser, state, UI)
-│   ├── sw.js            # Service Worker (PWA)
-│   ├── manifest.json    # Web App Manifest
-│   └── favicon.svg      # Ikon warung
-├── preview/             # Purwarupa statis (arsip)
+├── index.html       # App shell (PWA)
+├── style.css        # Tema warm cream + earth tones
+├── genai.js         # Helper pemanggil GenAI (serverless)
+├── src/             # Logika modular (parser, state, UI, fitur)
+│   ├── config.js    # Konfigurasi & deteksi environment
+│   ├── state.js     # Manajemen state + localStorage
+│   ├── input.js     # Parser perintah chat
+│   ├── transactions.js, items.js, utang.js, pengeluaran.js, report.js, tutup.js
+│   ├── chat.js, events.js, helpers.js, utils.js, pwa.js
+├── api/
+│   └── genai.js     # Serverless function — proxy ke B.AI (key server-side)
+├── sw.js            # Service Worker (PWA)
+├── manifest.json    # Web App Manifest
+├── favicon.svg      # Ikon warung
+├── vercel.json      # Security headers + CORS
+├── preview/         # Purwarupa statis (arsip)
 └── README.md
 ```
 
