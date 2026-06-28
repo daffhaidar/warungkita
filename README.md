@@ -263,5 +263,5 @@ Proyek ini dibangun untuk **IDCamp Developer Challenge #2: Digitalisasi & Aksele
 ---
 
 <p align="center">
-  <sub>Dibuat untuk 64 juta UMKM Indonesia 🇮🇩</sub>
+  <sub>Dibuat untuk 64 juta UMKM Indonesia</sub>
 </p>
