@@ -51,7 +51,9 @@ function showLaporan() {
     const loadingId = 'ai-loading-' + Date.now();
     addBotMsg('<span id="' + loadingId + '">🤖 AI lagi nganalisis <span class="typing-dots"><span></span><span></span><span></span></span></span>');
     const prompt = buildLaporanPrompt(state.namaWarung, tx, total, totalPengeluaran, untung, state.targetHarian, sorted);
-    callGenAI([{role:'user',content:prompt}]).then(summary => {
+    // max_tokens 2000: MiniMax-M3 reasons in <think> first; smaller budgets get
+    // truncated mid-reasoning, leaving an empty summary after the strip.
+    callGenAI([{role:'user',content:prompt}], {max_tokens: 2000}).then(summary => {
       const el = document.getElementById(loadingId);
       if (summary && el) {
         el.parentElement.innerHTML = '🤖 <strong>Ringkasan AI:</strong><br><br>' + esc(summary);

@@ -35,7 +35,7 @@ function checkRateLimit(ip) {
 // --- Input Validation ---
 const MAX_MESSAGES = 20;          // max messages array length
 const MAX_MSG_CONTENT = 2000;     // max chars per message content
-const MAX_TOTAL_TOKENS = 1000;    // cap max_tokens param
+const MAX_TOTAL_TOKENS = 2500;    // cap max_tokens param (MiniMax-M3 is a reasoning model — it spends tokens on <think> first; <1500 truncates mid-reasoning and leaves an empty answer)
 const MIN_TEMP = 0;
 const MAX_TEMP = 2;
 

@@ -100,7 +100,8 @@ function showRekap() {
     document.getElementById('rekapContent').appendChild(aiContainer);
 
     const prompt = buildRekapPrompt(state.namaWarung, tx, total, totalPengeluaran, untung, totalUtang, state.targetHarian, sorted);
-    callGenAI([{role:'user',content:prompt}]).then(summary => {
+    // max_tokens 2000: see report.js note — reasoning model needs room or summary is empty.
+    callGenAI([{role:'user',content:prompt}], {max_tokens: 2000}).then(summary => {
       if (summary) {
         aiContainer.innerHTML = '<div class="r-line"><span class="r-lbl"><strong>🤖 Ringkasan AI:</strong></span></div><div style="padding:8px 16px;color:#5a5047;font-size:14px;line-height:1.5">' + esc(summary) + '</div>';
       } else {
