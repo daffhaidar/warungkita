@@ -40,7 +40,55 @@ async function callGenAI(messages, opts = {}) {
   }
 }
 
+// ---- PROMPT BUILDERS (casual-motivasi, gaya chat WarungKita) ----
+// Dipakai showLaporan() (report.js) & rekap tutup (tutup.js). Tanpa fungsi ini,
+// blok AI di-skip diam-diam (guard `typeof build...Prompt === 'function'`).
+function _rp(n) { return 'Rp' + (Number(n) || 0).toLocaleString('id-ID'); }
+function _topProduk(sorted) {
+  return (sorted || []).slice(0, 3)
+    .map(([nama, qty], i) => `${i + 1}. ${nama} (${qty} terjual)`)
+    .join(', ') || 'belum ada penjualan';
+}
+
+function buildLaporanPrompt(namaWarung, tx, total, totalPengeluaran, untung, targetHarian, sorted) {
+  const target = targetHarian > 0
+    ? `Target harian ${_rp(targetHarian)}, tercapai ${Math.round(total / targetHarian * 100)}%.`
+    : 'Belum pasang target harian.';
+  const profit = totalPengeluaran > 0
+    ? `Pengeluaran ${_rp(totalPengeluaran)}, untung bersih ${_rp(untung)}.`
+    : '';
+  return `Kamu WarungKita, asisten warung yang ramah dan suka nyemangatin. Buatin ringkasan SINGKAT (maks 3 kalimat) buat pemilik warung "${namaWarung}" soal jualan hari ini. Pakai Bahasa Indonesia santai gaya ngobrol (boleh "kamu"), kasih 1-2 emoji yang pas. JANGAN pakai markdown/heading/bullet — teks mengalir aja. Langsung mulai, tanpa pembuka kayak "Tentu" atau "Berikut".
+
+Data hari ini:
+- Omzet: ${_rp(total)} dari ${(tx || []).length} transaksi
+- Produk terlaris: ${_topProduk(sorted)}
+${profit ? '- ' + profit + '\n' : ''}- ${target}
+
+Selipin 1 insight berguna (produk andalan / progress target) + 1 kalimat penyemangat yang tulus.`;
+}
+
+function buildRekapPrompt(namaWarung, tx, total, totalPengeluaran, untung, totalUtang, targetHarian, sorted) {
+  const target = targetHarian > 0
+    ? `Target ${_rp(targetHarian)} (tercapai ${Math.round(total / targetHarian * 100)}%)`
+    : 'tanpa target';
+  const utang = totalUtang > 0
+    ? `Masih ada utang pelanggan ${_rp(totalUtang)}.`
+    : 'Gak ada utang nyangkut.';
+  return `Kamu WarungKita, asisten warung yang ramah dan suka nyemangatin. Warung "${namaWarung}" baru aja tutup hari ini. Buatin penutup yang HANGAT dan SINGKAT (maks 3 kalimat) buat pemiliknya. Pakai Bahasa Indonesia santai gaya ngobrol (boleh "kamu"), kasih 1-2 emoji yang pas. JANGAN pakai markdown/heading/bullet — teks mengalir aja. Langsung mulai, tanpa pembuka kayak "Tentu" atau "Berikut".
+
+Rekap hari ini:
+- Omzet: ${_rp(total)} dari ${(tx || []).length} transaksi
+- Untung bersih: ${_rp(untung)} (pengeluaran ${_rp(totalPengeluaran)})
+- Produk terlaris: ${_topProduk(sorted)}
+- ${target}
+- ${utang}
+
+Apresiasi kerja kerasnya hari ini, kasih 1 catatan berguna buat besok, tutup dengan semangat.`;
+}
+
 // Export for use in app.js
 if (typeof window !== 'undefined') {
   window.callGenAI = callGenAI;
+  window.buildLaporanPrompt = buildLaporanPrompt;
+  window.buildRekapPrompt = buildRekapPrompt;
 }
