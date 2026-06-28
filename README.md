@@ -170,6 +170,8 @@ Karena data tersimpan di localStorage (per-perangkat), pemilik warung bisa menga
 ### 🤖 AI Ringkasan (Generative AI)
 Setiap kali user membuka laporan harian (`laporan`) atau menutup warung (`tutup`), sistem secara otomatis menghasilkan ringkasan naratif menggunakan **MiniMax-M3** (Generative AI). Ringkasan mencakup analisis omzet, produk terlaris, progress target, dan motivasi harian — dalam bahasa Indonesia yang natural dan emoji. Didukung oleh 8 API key dengan rotasi otomatis untuk availability tinggi.
 
+> ⏳ **Catatan soal waktu respons:** ringkasan AI butuh beberapa detik (umumnya ~5–10 detik) untuk muncul, dan ini **wajar**. MiniMax-M3 adalah *reasoning model* — sebelum menjawab, ia "berpikir" dulu lewat proses `<think>` internal untuk menganalisis data dengan lebih hati-hati dan akurat sebelum mengeluarkan output. Jadi delay ini adalah trade-off yang disengaja: jawaban yang lebih matang dan relevan, bukan respons asal cepat. Selama menunggu, indikator titik-titik ("🤖 AI lagi nganalisis...") akan tampil supaya jelas prosesnya sedang berjalan.
+
 ---
 
 ## Stack Teknologi
