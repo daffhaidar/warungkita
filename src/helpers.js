@@ -23,6 +23,56 @@ function showHelp() {
 // ---- MODAL HELPERS ----
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
+// ---- BACKUP / RESTORE (client-side, no backend) ----
+// Protects a real warung's data: localStorage is wiped on cache-clear / new
+// phone / reinstall. "backup" downloads a JSON snapshot; "restore" re-imports it.
+function backupData() {
+  try {
+    const data = localStorage.getItem('warungkita_state') || '{}';
+    const date = new Date().toISOString().slice(0, 10);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `warungkita-backup-${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    addBotMsg(`✅ Backup terunduh: <strong>warungkita-backup-${date}.json</strong><br>Simpan di tempat aman (Google Drive / WhatsApp sendiri). Kalo ganti HP atau kehapus, ketik <strong>"restore"</strong> buat balikin semua data.`);
+  } catch (e) {
+    addBotMsg('❌ Gagal bikin backup. Coba lagi ya.');
+  }
+}
+
+function restoreData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json,.json';
+  input.onchange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+          throw new Error('format salah');
+        }
+        // Merge onto current state so missing fields keep their defaults.
+        state = { ...state, ...parsed };
+        saveState();
+        addBotMsg('✅ Data berhasil dipulihkan! Memuat ulang aplikasi...');
+        setTimeout(() => location.reload(), 1200);
+      } catch (err) {
+        addBotMsg('❌ File ga valid. Pastikan itu file backup dari WarungKita (warungkita-backup-*.json) ya.');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
 // ---- INIT CHAT ----
 function renderChat() {
   if (!state.namaWarung) return;

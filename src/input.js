@@ -334,6 +334,10 @@ function processCommand(text) {
   // Help
   if (t === 'help' || t === 'bantuan' || t === '?') { showHelp(); return; }
 
+  // Backup / Restore data (client-side, protects against localStorage wipe)
+  if (t === 'backup' || t === 'cadangkan' || t === 'export') { backupData(); return; }
+  if (t === 'restore' || t === 'pulihkan' || t === 'import') { restoreData(); return; }
+
   // Plain number — treat as target
   const maybeNum = parseRupiah(t);
   if (maybeNum && maybeNum > 0) {

@@ -290,6 +290,13 @@ body{
   :root{--bg:#FDFBF7} /* keep cream for now */
 }
 
+/* TYPING INDICATOR (animated dots for async AI summaries) */
+.typing-dots{display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin:0 2px}
+.typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--sage);display:inline-block;animation:typingBounce 1.4s infinite ease-in-out both}
+.typing-dots span:nth-child(1){animation-delay:-0.32s}
+.typing-dots span:nth-child(2){animation-delay:-0.16s}
+@keyframes typingBounce{0%,80%,100%{transform:scale(0.5);opacity:0.35}40%{transform:scale(1);opacity:1}}
+
 /* iOS input zoom prevention */
 @supports(-webkit-touch-callout:none){
   .input-field,.setup-input{font-size:16px}

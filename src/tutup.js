@@ -96,7 +96,7 @@ function showRekap() {
     const aiContainer = document.createElement('div');
     aiContainer.className = 'rekap-card';
     aiContainer.style.marginTop = '12px';
-    aiContainer.innerHTML = '<div class="r-line"><span class="r-lbl" style="color:#b0a89a">🤖 AI sedang membuat ringkasan...</span></div>';
+    aiContainer.innerHTML = '<div class="r-line"><span class="r-lbl" style="color:#b0a89a">🤖 AI lagi bikin ringkasan <span class="typing-dots"><span></span><span></span><span></span></span></span></div>';
     document.getElementById('rekapContent').appendChild(aiContainer);
 
     const prompt = buildRekapPrompt(state.namaWarung, tx, total, totalPengeluaran, untung, totalUtang, state.targetHarian, sorted);

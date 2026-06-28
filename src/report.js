@@ -49,7 +49,7 @@ function showLaporan() {
   // GenAI summary — async follow-up
   if (typeof callGenAI === 'function' && typeof buildLaporanPrompt === 'function') {
     const loadingId = 'ai-loading-' + Date.now();
-    addBotMsg('<span id="' + loadingId + '" style="color:#b0a89a">🤖 AI sedang menganalisis...</span>');
+    addBotMsg('<span id="' + loadingId + '">🤖 AI lagi nganalisis <span class="typing-dots"><span></span><span></span><span></span></span></span>');
     const prompt = buildLaporanPrompt(state.namaWarung, tx, total, totalPengeluaran, untung, state.targetHarian, sorted);
     callGenAI([{role:'user',content:prompt}]).then(summary => {
       const el = document.getElementById(loadingId);
