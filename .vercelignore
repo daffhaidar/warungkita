@@ -23,3 +23,7 @@ docs/
 preview/
 README.md
 backend/
+
+# Duplicate frontend mirror + dead legacy monolith (not referenced by root index.html)
+frontend/
+app.legacy.js

@@ -24,26 +24,12 @@ let useBackend = false; // set true after successful API ping
 let _keyFetchPromise = null;
 
 async function ensureApiKey() {
-  if (API_KEY) return API_KEY;
-  if (_keyFetchPromise) return _keyFetchPromise;
-  _keyFetchPromise = (async () => {
-    try {
-      // Init endpoint returns (or reuses) the api key. Requires admin token from URL or localStorage.
-      const adminToken = new URLSearchParams(location.search).get('t') || localStorage.getItem('warungkita_admin_token') || '';
-      const resp = await fetch(API_BASE + '/api/init' + (adminToken ? '?t=' + encodeURIComponent(adminToken) : ''));
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data.api_key) {
-          API_KEY = data.api_key;
-          localStorage.setItem('warungkita_api_key', API_KEY);
-          return API_KEY;
-        }
-      }
-    } catch(e) {}
-    _keyFetchPromise = null;
-    return null;
-  })();
-  return _keyFetchPromise;
+  // Backend removed (v3.5): the /api/init key-provisioning endpoint no longer
+  // exists, and the only live serverless function (/api/genai) holds keys
+  // server-side — the client never needs a key. Returning null here also drops
+  // the old admin-token-in-URL (?t=...) pattern, which was a weak design.
+  // Kept as a no-op so existing apiFetch callers don't throw.
+  return null;
 }
 
 // Wrap fetch with auto-injected X-API-Key header

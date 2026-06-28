@@ -92,8 +92,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Rate limit
-  const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
+  // Rate limit — use only the FIRST IP from x-forwarded-for (Vercel sets the
+  // real client IP as the leftmost entry). Using the raw header as the key let
+  // an attacker rotate it (e.g. "1.1.1.1, x") to mint a fresh bucket per request.
+  const fwd = req.headers['x-forwarded-for'];
+  const ip = (typeof fwd === 'string' ? fwd.split(',')[0].trim() : '') || req.socket?.remoteAddress || 'unknown';
   if (!checkRateLimit(ip)) {
     return res.status(429).json({ error: 'Too many requests. Slow down.' });
   }

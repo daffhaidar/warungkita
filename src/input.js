@@ -154,28 +154,11 @@ function handleFirstSetup(text) {
 }
 
 async function tryBackend(text) {
-  try {
-    const resp = await apiFetch('/api/chat', {
-      method: 'POST',
-      body: JSON.stringify({ message: text, warung_name: state.namaWarung }),
-    });
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    useBackend = true;
-    // Handle actions that need special treatment
-    if (data.action === 'close_shop') {
-      showRekapFromBackend(data);
-      return null; // rekap handled separately
-    }
-    if (data.action === 'open_shop') {
-      state.buka = true;
-      saveState();
-      updateUIForOpen();
-    }
-    return data.reply;
-  } catch(e) {
-    return null; // fallback to local
-  }
+  // Backend removed (v3.5): the app runs fully on the local parser below.
+  // Short-circuit so we don't fire dead /api/chat (which also triggers the dead
+  // /api/init key fetch) on every single message — saves two failed round-trips
+  // per message and removes the latency before the local fallback kicks in.
+  return null;
 }
 
 async function syncState() {
@@ -204,13 +187,9 @@ function showRekapFromBackend(data) {
 }
 
 async function setupWarungAPI(name) {
-  try {
-    const resp = await apiFetch('/api/setup', {
-      method: 'POST',
-      body: JSON.stringify({ name }),
-    });
-    if (resp.ok) useBackend = true;
-  } catch(e) {}
+  // Backend removed (v3.5): no-op. The warung name is persisted locally via
+  // saveState() — there's no /api/setup endpoint to notify anymore.
+  return;
 }
 
 // ---- COMMAND PARSER (mock AI) ----

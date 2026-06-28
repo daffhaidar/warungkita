@@ -155,8 +155,8 @@ function parseTransaksi(text) {
     ${html}
     <div class="msg-time">${jam()}</div>
     <div class="chat-btns">
-      <button class="ok-btn" onclick="confirmTx(this)">OK ✅</button>
-      <button class="koreksi-btn" onclick="koreksiTx(this)">✏️ Koreksi</button>
+      <button class="ok-btn" data-action="confirm-tx">OK ✅</button>
+      <button class="koreksi-btn" data-action="koreksi-tx">✏️ Koreksi</button>
     </div>
   </div>`;
   area.appendChild(row);
@@ -374,8 +374,8 @@ function finalizeTransaksi(items, utangName) {
     ${html}
     <div class="msg-time">${jam()}</div>
     <div class="chat-btns">
-      <button class="ok-btn" onclick="confirmTx(this)">OK ✅</button>
-      <button class="koreksi-btn" onclick="koreksiTx(this)">✏️ Koreksi</button>
+      <button class="ok-btn" data-action="confirm-tx">OK ✅</button>
+      <button class="koreksi-btn" data-action="koreksi-tx">✏️ Koreksi</button>
     </div>
   </div>`;
   area.appendChild(row);

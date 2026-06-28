@@ -48,8 +48,8 @@ function parsePengeluaran(text) {
     ${html}
     <div class="msg-time">${jam()}</div>
     <div class="chat-btns">
-      <button class="ok-btn" onclick="confirmPengeluaran(this)">OK ✅</button>
-      <button class="koreksi-btn" onclick="koreksiPengeluaran(this)">✏️ Koreksi</button>
+      <button class="ok-btn" data-action="confirm-pengeluaran">OK ✅</button>
+      <button class="koreksi-btn" data-action="koreksi-pengeluaran">✏️ Koreksi</button>
     </div>
   </div>`;
   area.appendChild(row);

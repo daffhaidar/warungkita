@@ -48,6 +48,22 @@ function saveState() {
 
 // ---- EVENTS ----
 function bindEvents() {
+  // Delegated click handler for dynamically-rendered buttons (replaces inline
+  // onclick= so we can drop 'unsafe-inline' from the script-src CSP). One
+  // listener on chatArea covers tx/pengeluaran confirm+koreksi and quick-sell;
+  // modal close buttons live outside chatArea so bind at document level.
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    switch (btn.dataset.action) {
+      case 'confirm-tx':            confirmTx(btn); break;
+      case 'koreksi-tx':            koreksiTx(btn); break;
+      case 'confirm-pengeluaran':   confirmPengeluaran(btn); break;
+      case 'koreksi-pengeluaran':   koreksiPengeluaran(btn); break;
+      case 'quick-sell':            quickSell(btn.dataset.nama); break;
+      case 'close-modal':           closeModal(btn.dataset.modal); break;
+    }
+  });
   // Onboarding
   document.getElementById('btnMulai').onclick = () => {
     document.getElementById('onboarding').classList.remove('active');
@@ -140,7 +156,7 @@ function renderQuickSell() {
   keys.forEach(k => {
     const s = state.stok[k];
     const satuanEmoji = s.satuan === 'mangkok' ? '🍜' : s.satuan === 'kg' ? '⚖️' : s.satuan === 'gelas' ? '🥤' : '📦';
-    html += `<button class="qs-btn" onclick="quickSell('${esc(s.nama)}')">${satuanEmoji} ${esc(s.nama)}</button>`;
+    html += `<button class="qs-btn" data-action="quick-sell" data-nama="${esc(s.nama)}">${satuanEmoji} ${esc(s.nama)}</button>`;
   });
   qs.innerHTML = html;
   qs.style.display = 'flex';
