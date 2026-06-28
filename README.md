@@ -139,6 +139,8 @@ Contoh perintah sehari-hari:
 | Perintah | Contoh | Keterangan |
 |----------|--------|------------|
 | `help` / `bantuan` / `?` | `help` | Lihat menu bantuan |
+| `backup` / `cadangkan` / `export` | `backup` | Unduh cadangan data (JSON) |
+| `restore` / `pulihkan` / `import` | `restore` | Pulihkan data dari file cadangan |
 
 ---
 
@@ -161,6 +163,9 @@ Hitung kembalian instan — cukup ketik `bayar 35000 50000`. Setelah transaksi, 
 
 ### 📱 PWA
 Bisa di-install sebagai app di HP (Add to Home Screen). Data tersimpan di localStorage — offline tetap jalan.
+
+### 💾 Backup & Restore Data
+Karena data tersimpan di localStorage (per-perangkat), pemilik warung bisa mengamankan datanya kapan saja. Ketik `backup` untuk mengunduh snapshot JSON (`warungkita-backup-YYYY-MM-DD.json`) — simpan di Google Drive atau kirim ke WhatsApp sendiri. Saat ganti HP, clear cache, atau install ulang, ketik `restore` lalu pilih file cadangannya. Sepenuhnya client-side, tanpa server.
 
 ### 🤖 AI Ringkasan (Generative AI)
 Setiap kali user membuka laporan harian (`laporan`) atau menutup warung (`tutup`), sistem secara otomatis menghasilkan ringkasan naratif menggunakan **MiniMax-M3** (Generative AI). Ringkasan mencakup analisis omzet, produk terlaris, progress target, dan motivasi harian — dalam bahasa Indonesia yang natural dan emoji. Didukung oleh 8 API key dengan rotasi otomatis untuk availability tinggi.
