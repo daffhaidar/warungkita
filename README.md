@@ -47,6 +47,7 @@ Contoh perintah sehari-hari:
 | Cek stok | `stok` |
 | Lihat laporan hari ini | `total hari ini` |
 | Lihat daftar utang | `utang` |
+| Bikin promosi WA Story (AI) | pencet chip `📣 Promosi` |
 | Tutup warung + rekap | `tutup` |
 
 ---
@@ -171,6 +172,20 @@ Karena data tersimpan di localStorage (per-perangkat), pemilik warung bisa menga
 Setiap kali user membuka laporan harian (`laporan`) atau menutup warung (`tutup`), sistem secara otomatis menghasilkan ringkasan naratif menggunakan **MiniMax-M3** (Generative AI). Ringkasan mencakup analisis omzet, produk terlaris, progress target, dan motivasi harian — dalam bahasa Indonesia yang natural dan emoji. Didukung oleh 8 API key dengan rotasi otomatis untuk availability tinggi.
 
 > ⏳ **Catatan soal waktu respons:** ringkasan AI butuh beberapa detik (umumnya ~5–10 detik) untuk muncul, dan ini **wajar**. MiniMax-M3 adalah *reasoning model* — sebelum menjawab, ia "berpikir" dulu lewat proses `<think>` internal untuk menganalisis data dengan lebih hati-hati dan akurat sebelum mengeluarkan output. Jadi delay ini adalah trade-off yang disengaja: jawaban yang lebih matang dan relevan, bukan respons asal cepat. Selama menunggu, indikator titik-titik ("🤖 AI lagi nganalisis...") akan tampil supaya jelas prosesnya sedang berjalan.
+
+### 📣 AI Promosi — Caption WhatsApp Story (Generative AI)
+Pencet chip **📣 Promosi**, dan WarungKita pakai **MiniMax-M3** untuk membuatkan caption promosi siap-pakai berdasarkan nama warung dan produk terlaris. Hasilnya bisa langsung **disalin** atau **dibagikan ke WhatsApp** (native share sheet → Status di HP, fallback `wa.me` di desktop) — tinggal tempel jadi WA Story buat narik pelanggan.
+
+```
+👤 (pencet 📣 Promosi)
+🤖 📣 Promosi buat WA Story:
+   Lagi lapar ngganjel perut? 😋🍜
+   Soto ayam gurih + es teh seger, lengkap di Warung Bu Sri!
+   Mampir sekarang, kamu bakal balik lagi! 🥤
+   [ 📋 Salin ]  [ 📲 Share ke WA ]
+```
+
+> Menjawab kebutuhan UMKM "pembuatan materi promosi otomatis" — pemilik warung yang nggak punya waktu/skill bikin caption tinggal sekali pencet.
 
 ---
 
