@@ -86,9 +86,23 @@ Rekap hari ini:
 Apresiasi kerja kerasnya hari ini, kasih 1 catatan berguna buat besok, tutup dengan semangat.`;
 }
 
+function buildPromosiPrompt(namaWarung, sorted, total) {
+  const andalan = (sorted && sorted.length)
+    ? sorted.slice(0, 2).map(([nama]) => nama).join(' & ')
+    : 'menu andalan';
+  return `Kamu WarungKita, asisten warung yang jago bikin promosi. Buatin caption PROMOSI singkat buat WhatsApp Story warung "${namaWarung}". Pakai Bahasa Indonesia santai yang ngajak (boleh "kamu"), bikin orang pengen mampir. Maks 3 baris pendek, kasih 2-3 emoji yang pas, selipin call-to-action (misal "yuk mampir", "pesan sekarang"). JANGAN pakai markdown/heading/bullet. Langsung mulai, tanpa pembuka kayak "Tentu" atau "Berikut".
+
+Info warung:
+- Nama: ${namaWarung}
+- Menu/produk andalan: ${andalan}
+
+Bikin yang catchy biar cocok dipasang di status WA.`;
+}
+
 // Export for use in app.js
 if (typeof window !== 'undefined') {
   window.callGenAI = callGenAI;
   window.buildLaporanPrompt = buildLaporanPrompt;
   window.buildRekapPrompt = buildRekapPrompt;
+  window.buildPromosiPrompt = buildPromosiPrompt;
 }

@@ -62,6 +62,8 @@ function bindEvents() {
       case 'koreksi-pengeluaran':   koreksiPengeluaran(btn); break;
       case 'quick-sell':            quickSell(btn.dataset.nama); break;
       case 'close-modal':           closeModal(btn.dataset.modal); break;
+      case 'promo-copy':            copyPromoToClipboard(); break;
+      case 'promo-share':           sharePromoToWhatsApp(); break;
     }
   });
   // Onboarding
@@ -99,6 +101,7 @@ function bindEvents() {
     btn.onclick = () => {
       const cmd = btn.dataset.cmd;
       if (cmd === 'tutup') { showTutupModal(); return; }
+      if (cmd === 'promosi') { showPromosi(); return; }
       if (cmd === 'jual') {
         document.getElementById('chatInput').placeholder = 'Ketik: "jual soto 3"';
         document.getElementById('chatInput').focus();

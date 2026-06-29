@@ -71,6 +71,70 @@ function showLaporanMinggu() {
   addBotMsg('📊 Laporan mingguan belum tersedia di versi ini. Fitur ini coming soon ya~');
 }
 
+// ---- PROMOSI (WA Story) ----
+// AI bikinin caption promosi buat dipasang di status/story WhatsApp.
+function showPromosi() {
+  if (typeof callGenAI !== 'function' || typeof buildPromosiPrompt !== 'function') {
+    addBotMsg('Fitur promosi AI belum tersedia.');
+    return;
+  }
+  const tx = state.transaksi;
+  const itemCounts = {};
+  tx.forEach(t => t.items.forEach(i => {
+    if (!itemCounts[i.nama]) itemCounts[i.nama] = 0;
+    itemCounts[i.nama] += i.qty;
+  }));
+  const sorted = Object.entries(itemCounts).sort((a, b) => b[1] - a[1]);
+  const total = tx.reduce((s, t) => s + t.total, 0);
+
+  const loadingId = 'promo-loading-' + Date.now();
+  addBotMsg('<span id="' + loadingId + '">📣 AI lagi bikinin promosi <span class="typing-dots"><span></span><span></span><span></span></span></span>');
+  const prompt = buildPromosiPrompt(state.namaWarung, sorted, total);
+  // max_tokens 2000: MiniMax-M3 reasons in <think> first; smaller budgets get
+  // truncated mid-reasoning, leaving an empty caption after the strip.
+  callGenAI([{ role: 'user', content: prompt }], { max_tokens: 2000 }).then(promo => {
+    const el = document.getElementById(loadingId);
+    if (!el) return;
+    if (!promo) { el.parentElement.parentElement.style.display = 'none'; return; }
+    window._lastPromo = promo;
+    let html = '📣 <strong>Promosi buat WA Story:</strong><br><br>';
+    html += '<div class="promo-box">' + esc(promo) + '</div>';
+    html += '<div class="promo-actions">';
+    html += '<button class="promo-btn" data-action="promo-copy">📋 Salin</button>';
+    html += '<button class="promo-btn wa" data-action="promo-share">📲 Share ke WA</button>';
+    html += '</div>';
+    el.parentElement.innerHTML = html;
+  }).catch(() => {
+    const el = document.getElementById(loadingId);
+    if (el) el.parentElement.parentElement.style.display = 'none';
+  });
+}
+
+function copyPromoToClipboard() {
+  const txt = window._lastPromo || '';
+  if (!txt) return;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt)
+      .then(() => addBotMsg('✅ Promosi disalin! Tinggal paste di status WA kamu.'))
+      .catch(() => addBotMsg('Gagal menyalin, coba salin manual ya.'));
+  } else {
+    addBotMsg('Browser ini gak dukung salin otomatis, salin manual ya.');
+  }
+}
+
+function sharePromoToWhatsApp() {
+  const txt = window._lastPromo || '';
+  if (!txt) return;
+  // navigator.share opens the native share sheet on mobile -> pilih WhatsApp -> Status.
+  // wa.me fallback for desktop / browsers without Web Share API.
+  if (navigator.share) {
+    navigator.share({ text: txt }).catch(() => {});
+  } else {
+    const url = 'https://wa.me/?text=' + encodeURIComponent(txt);
+    window.open(url, '_blank', 'noopener');
+  }
+}
+
 // ---- RIWAYAT ----
 function showRiwayat() {
   const tx = state.transaksi;
