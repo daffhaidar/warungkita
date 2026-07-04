@@ -1,23 +1,15 @@
 /**
  * WarungKita — utils.js
- * Currency parser, fuzzy match, change calc, target
+ * Currency parser, fuzzy match, change calc, target, helpers
  * Part of modular refactor (v3.5)
  * Original: app.js (2214 lines, split for maintainability)
  */
 
 // ---- CURRENCY PARSER ----
-// "500rb" → 500000, "1jt" → 1000000, "1,5jt" → 1500000, "500.000" → 500000
 function parseRupiah(text) {
   if (!text) return null;
   const t = text.toLowerCase().replace(/\s/g, '');
-
-  // Strip "rp" prefix if present
-  const clean = t.replace(/^rp\.?/, '');
-
-  // Match: number [optional decimal] [optional multiplier] [optional extra multiplier]
-  // e.g. "500rb", "1,5jt", "1.5juta", "2.500.000", "500", "500000"
-  const m = clean.match(/^(\d+(?:[.,]\d+)*)(?:[.,](\d+))?\s*(rb|ribu|jt|juta|m|miliar)?$/i);
-
+  const m = window.WarungConfig.RUPIAH_REGEX.exec(t);
   if (!m) return null;
 
   let num = parseFloat(m[1].replace(/\./g, '').replace(/,/g, '.'));
@@ -31,8 +23,28 @@ function parseRupiah(text) {
   return Math.round(num);
 }
 
+// ---- FORMATTING ----
+function rupiah(n) {
+  return 'Rp' + Math.round(n).toLocaleString('id-ID');
+}
+
+function capitalize(s) {
+  return s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function normalizeKey(s) {
+  return s.toLowerCase().replace(/[^a-z ]/g, '').trim();
+}
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function jam() {
+  return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+}
+
 // ---- FUZZY MATCH (Levenshtein-based) ----
-// Used for typo tolerance: "rkok surya" → suggests "Rokok Surya" if it exists in itemConfig / stok.
 function levenshtein(a, b) {
   if (a === b) return 0;
   if (!a.length) return b.length;
@@ -52,20 +64,18 @@ function levenshtein(a, b) {
   return m[b.length][a.length];
 }
 
-// Find the best fuzzy match for `input` in the union of known item names
-// (from itemConfig keys + stok keys). Returns the matched name or null.
 function fuzzyFindItem(input) {
   const norm = normalizeKey(input);
-  if (!norm || norm.length < 3) return null; // too short, skip
-  // Build candidate list from itemConfig + stok + typoMap canonicals
+  if (!norm || norm.length < 3) return null;
+
   const candidates = new Set();
   Object.values(state.itemConfig || {}).forEach(c => { if (c && c.nama) candidates.add(c.nama); });
   Object.values(state.stok || {}).forEach(s => { if (s && s.nama) candidates.add(s.nama); });
-  // Exact (normalized) match — no need to suggest
+
   for (const c of candidates) {
     if (normalizeKey(c) === norm) return null;
   }
-  // Find closest by Levenshtein distance
+
   let best = null;
   let bestDist = Infinity;
   for (const c of candidates) {
@@ -73,9 +83,7 @@ function fuzzyFindItem(input) {
     const d = levenshtein(norm, cKey);
     if (d < bestDist) { bestDist = d; best = c; }
   }
-  // Threshold: distance <= 2 for words of length >= 4, or <= 1 for short ones.
-  // Avoid suggesting wildly different items.
-  if (!best) return null;
+
   const lenRatio = norm.length / best.length;
   if (lenRatio < 0.5 || lenRatio > 2) return null;
   if (bestDist <= 1) return best;
@@ -83,36 +91,36 @@ function fuzzyFindItem(input) {
   return null;
 }
 
-// Try fuzzy match on a "jual ..." style input. If a likely typo is detected,
-// ask the user for confirmation. Otherwise invoke callback(null) directly.
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function tryFuzzyOnInput(text, callback) {
-  // First, check the typoMap for an exact known typo → canonical mapping
   const cleaned = text.replace(/^(jual|catat|order|jualin|in|mau\s+jual|aku\s+mau\s+jual)\s+/i, '').trim();
-  // Pull out the item name (everything before the first qty-like number)
   const m = cleaned.match(/^([a-zA-Z][a-zA-Z\s]+?)(?:\s+\d|$)/);
   const itemGuess = m ? m[1].trim() : cleaned.split(/\s+/)[0];
+  
   if (!itemGuess || itemGuess.length < 3) {
     callback(null);
     return;
   }
-  // First, check typoMap for known mapping
+
   const mapped = state.typoMap[normalizeKey(itemGuess)];
   if (mapped) {
     const canonical = Object.values(state.itemConfig).find(c => normalizeKey(c.nama) === mapped);
     if (canonical) {
-      // Auto-correct silently and proceed
       const replaced = text.replace(new RegExp('^' + escapeRegex(itemGuess) + '\\b', 'i'), canonical.nama);
       callback(replaced);
       return;
     }
   }
-  // Otherwise fuzzy search
+
   const suggestion = fuzzyFindItem(itemGuess);
   if (!suggestion) {
     callback(null);
     return;
   }
-  // Ask for confirmation
+
   state.pendingFuzzy = { input: itemGuess, suggested: suggestion, callback };
   addBotMsg(
     `Maksudnya <strong>${esc(suggestion)}</strong>? 🤔<br>` +
@@ -120,14 +128,13 @@ function tryFuzzyOnInput(text, callback) {
   );
 }
 
-function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
 // ---- KEMBALIAN (Change calculation) ----
 function showKembalian(total, uang) {
   const selisih = uang - total;
   let html = `💰 <strong>Hitung Kembalian</strong><br><br>`;
   html += `💵 Total: <strong>${rupiah(total)}</strong><br>`;
   html += `💴 Uang pembeli: <strong>${rupiah(uang)}</strong><br>`;
+  
   if (selisih === 0) {
     html += `✅ <strong>Uang pas!</strong> Nggak ada kembalian.`;
   } else if (selisih > 0) {
@@ -135,6 +142,7 @@ function showKembalian(total, uang) {
   } else {
     html += `⚠️ Uang kurang <strong>${rupiah(-selisih)}</strong>`;
   }
+  
   addBotMsg(html);
 }
 
@@ -171,3 +179,54 @@ function showTarget() {
   addBotMsg(`🎯 <strong>Progress Target</strong>${renderProgressBar(total, state.targetHarian, pct)}<br><br>${emoji}`);
 }
 
+// ---- PROGRESS BAR ----
+function renderProgressBar(current, target, pct) {
+  const widthPct = Math.min(100, Math.max(0, pct));
+  const isOver = pct > 100;
+  const colorClass = isOver ? 'over' : '';
+  return `<div class="progress-wrap" style="margin-top:8px">
+    <div class="progress-bar ${colorClass}">
+      <div class="progress-fill" style="width:${widthPct}%"></div>
+    </div>
+    <div class="progress-label">🎯 ${rupiah(current)} / ${rupiah(target)} (${pct}%)${isOver ? ' 🎉' : ''}</div>
+  </div>`;
+}
+
+// ---- STATE MUTATION GUARDS ----
+function clearAllPendingStates() {
+  state.pendingPrice = null;
+  state.pendingPengeluaran = null;
+  state.pendingStockWarning = null;
+  state.pendingBayar = null;
+  state.pendingStokQuestion = null;
+  state.pendingFuzzy = null;
+  state.pendingUtangAskName = null;
+  saveState();
+}
+
+function setPendingState(type, value) {
+  clearAllPendingStates();
+  state[type] = value;
+  saveState();
+}
+
+// Export helpers
+window.WarungUtils = {
+  parseRupiah,
+  rupiah,
+  capitalize,
+  normalizeKey,
+  esc,
+  jam,
+  levenshtein,
+  fuzzyFindItem,
+  escapeRegex,
+  tryFuzzyOnInput,
+  showKembalian,
+  setTarget,
+  setTargetText,
+  showTarget,
+  renderProgressBar,
+  clearAllPendingStates,
+  setPendingState,
+};
