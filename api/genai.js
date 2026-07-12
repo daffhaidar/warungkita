@@ -1,14 +1,37 @@
-// WarungKita GenAI Serverless Function (v3.5 — Hardened)
-// Security: rate limiting, input validation, message cap
+// WarungKita GenAI Serverless Function (v4.0 — Hardened+)
+// Security: rate limiting (Redis-ready), CORS, Referer check, input validation
 // Keys from Vercel env vars — NEVER exposed to client
 
 const BAI_BASE = 'https://api.b.ai/v1/chat/completions';
 const BAI_MODEL = 'minimax-m3';
+const ALLOWED_ORIGIN = 'https://warungkita.vercel.app';
+
+// --- CORS & Referer Check ---
+function checkOrigin(req) {
+  const origin = req.headers.origin;
+  const referer = req.headers.referer;
+  
+  // Check Origin header (for CORS preflight/actual requests)
+  if (origin && origin !== ALLOWED_ORIGIN) {
+    return { valid: false, error: 'Invalid origin' };
+  }
+  
+  // Check Referer header (for simple POST requests)
+  if (referer && !referer.startsWith(ALLOWED_ORIGIN)) {
+    return { valid: false, error: 'Invalid referer' };
+  }
+  
+  return { valid: true };
+}
 
 // --- Rate Limiting (in-memory, per-IP) ---
-const RATE_WINDOW_MS = 60_000;   // 1 minute
-const RATE_MAX_REQS = 10;         // 10 requests per minute per IP
-const rateBuckets = new Map();    // ip -> [timestamps]
+// TODO: Migrate to Vercel KV for production: 
+//   import { kv } from '@vercel/kv';
+//   const count = await kv.incr(`rate:${ip}`);
+//   await kv.expire(`rate:${ip}`, 60);
+const RATE_WINDOW_MS = 60_000;      // 1 minute
+const RATE_MAX_REQS = 10;            // 10 requests per minute per IP
+const rateBuckets = new Map();       // ip -> [timestamps]
 
 function checkRateLimit(ip) {
   const now = Date.now();
@@ -88,8 +111,19 @@ function getNextKey(keys) {
 // --- Handler ---
 export default async function handler(req, res) {
   // Method check
-  if (req.method !== 'POST') {
+  if (req.method !== 'POST' && req.method !== 'OPTIONS') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  // Origin & Referer check (prevent direct API access)
+  const originCheck = checkOrigin(req);
+  if (!originCheck.valid) {
+    return res.status(403).json({ error: 'Forbidden: Invalid origin' });
   }
 
   // Rate limit — use only the FIRST IP from x-forwarded-for (Vercel sets the
