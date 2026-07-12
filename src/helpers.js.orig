@@ -302,7 +302,7 @@ function exportToPDF() {
     win.document.write(html);
     win.document.close();
     
-    addBotMsg(`✅ Laporan dibuka di tab baru.<br><br><strong>Cara simpan PDF:</strong><br>📱 <strong>HP:</strong> Tap menu (⋮) → "Share" → "Print" → "Save as PDF"<br>💻 <strong>Desktop:</strong> Tekan Ctrl+P → Pilih "Save as PDF"`);
+    addBotMsg(`✅ Laporan PDF dibuka di tab baru.<br>Klik kanan → "Save as PDF" atau tekan Ctrl+P untuk cetak.`);
   } catch (e) {
     addBotMsg('❌ Gagal bikin PDF. Coba lagi ya.');
   }

@@ -1,0 +1,10 @@
+--- src/helpers.js
++++ src/helpers.js
+@@ -220,6 +220,7 @@ function exportToPDF() {
+     const win = window.open('', '_blank');
+     win.document.write(html);
+     win.document.close();
++    
+     addBotMsg(`✅ Laporan PDF dibuka di tab baru.<br><br><strong>Cara simpan:</strong><br>1. Desktop: Tekan <code>Ctrl+P</code> → Pilih "Save as PDF"<br>2. HP: Tap menu (⋮) → "Share" → "Print" → "Save as PDF"<br><br>Atau klik kanan → "Save as PDF"`);
+   } catch (e) {
+     addBotMsg('❌ Gagal bikin PDF. Coba lagi ya.');
