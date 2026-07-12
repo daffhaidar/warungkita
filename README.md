@@ -4,6 +4,7 @@
 
 [![Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://warungkita.vercel.app)
 [![Stack](https://img.shields.io/badge/stack-Vanilla_JS_+_PWA-8b7e6a)](https://github.com/daffhaidar/warungkita)
+[![Security](https://img.shields.io/badge/security-v4.0-hardened)](https://github.com/daffhaidar/warungkita)
 
 ---
 
@@ -30,7 +31,7 @@ Tools digital yang tersedia terlalu rumit, terlalu mahal, atau tidak berbahasa I
 
 ## Cara Pakai
 
-1. Buka **warungkita.vercel.app** di HP
+1. Buka **warungkita.vercel.app** atau **warungkita.web.id** di HP
 2. Ketik nama warung, tekan **"Gas mulai"**
 3. Langsung bisa dipake — ketik aja kayak chat WhatsApp
 
@@ -41,13 +42,14 @@ Contoh perintah sehari-hari:
 | Catet jualan | `jual soto 2` |
 | Jual + langsung kasih harga | `jual indomie 1 bks 3500` |
 | Catet utang pelanggan | `utang budi soto 2 15000` |
-| Jual + catet utang sekaligus | `jual rokok 1 pack utang budi` |
+| Jual + catat utang sekaligus | `jual rokok 1 pack utang budi` |
 | Hitung kembalian | `bayar 35000 50000` |
-| Catet pengeluaran/beli bahan | `beli minyak 20rb` |
+| Catat pengeluaran/beli bahan | `beli minyak 20rb` |
 | Cek stok | `stok` |
 | Lihat laporan hari ini | `total hari ini` |
 | Lihat daftar utang | `utang` |
 | Bikin promosi WA Story (AI) | pencet chip `📣 Promosi` |
+| Backup data | pencet chip `💾 Backup` |
 | Tutup warung + rekap | `tutup` |
 
 ---
@@ -140,7 +142,7 @@ Contoh perintah sehari-hari:
 | Perintah | Contoh | Keterangan |
 |----------|--------|------------|
 | `help` / `bantuan` / `?` | `help` | Lihat menu bantuan |
-| `backup` / `cadangkan` / `export` | `backup` | Unduh cadangan data (JSON) |
+| `backup` / `cadangkan` / `export` | `backup` atau pencet chip `💾 Backup` | Unduh cadangan data (JSON terenkripsi) |
 | `restore` / `pulihkan` / `import` | `restore` | Pulihkan data dari file cadangan |
 
 ---
@@ -165,8 +167,22 @@ Hitung kembalian instan — cukup ketik `bayar 35000 50000`. Setelah transaksi, 
 ### 📱 PWA
 Bisa di-install sebagai app di HP (Add to Home Screen). Data tersimpan di localStorage — offline tetap jalan.
 
-### 💾 Backup & Restore Data
-Karena data tersimpan di localStorage (per-perangkat), pemilik warung bisa mengamankan datanya kapan saja. Ketik `backup` untuk mengunduh snapshot JSON (`warungkita-backup-YYYY-MM-DD.json`) — simpan di Google Drive atau kirim ke WhatsApp sendiri. Saat ganti HP, clear cache, atau install ulang, ketik `restore` lalu pilih file cadangannya. Sepenuhnya client-side, tanpa server.
+### 💾 Backup & Restore Data (v4.0 — Encrypted)
+Karena data tersimpan di localStorage (per-perangkat), pemilik warung bisa mengamankan datanya kapan saja. 
+
+**Cara backup:**
+1. Pencet chip **💾 Backup** di quick actions, atau ketik `backup`
+2. Pilih **"OK"** untuk enkripsi (recommended) atau **"Batal"** untuk plain backup
+3. Jika enkripsi: masukkan password (min 4 karakter) dan konfirmasi
+4. Download file: `warungkita-backup-YYYY-MM-DD-encrypted.json`
+
+**Cara restore:**
+1. Ketik `restore`
+2. Pilih file backup (`.json` atau `-encrypted.json`)
+3. Jika file terenkripsi: masukkan password
+4. Data otomatis dipulihkan
+
+> 🔒 **Keamanan:** Backup menggunakan **AES-GCM 256-bit** encryption dengan key derivation **PBKDF2** (100K iterations). Password TIDAK tersimpan di file — jika lupa password, data TIDAK bisa dipulihkan.
 
 ### 🤖 AI Ringkasan (Generative AI)
 Setiap kali user membuka laporan harian (`laporan`) atau menutup warung (`tutup`), sistem secara otomatis menghasilkan ringkasan naratif menggunakan **MiniMax-M3** (Generative AI). Ringkasan mencakup analisis omzet, produk terlaris, progress target, dan motivasi harian — dalam bahasa Indonesia yang natural dan emoji. Didukung oleh 8 API key dengan rotasi otomatis untuk availability tinggi.
@@ -187,6 +203,31 @@ Pencet chip **📣 Promosi**, dan WarungKita pakai **MiniMax-M3** untuk membuatk
 
 > Menjawab kebutuhan UMKM "pembuatan materi promosi otomatis" — pemilik warung yang nggak punya waktu/skill bikin caption tinggal sekali pencet.
 
+### 🔒 Security Hardening (v4.0)
+
+WarungKita v4.0 dilengkapi dengan proteksi keamanan berlapis:
+
+**Network Layer (Cloudflare):**
+- ✅ Rate limiting: 50 requests per 10 detik per IP
+- ✅ DDoS protection
+- ✅ WAF (Web Application Firewall)
+- ✅ SSL/TLS encryption
+
+**Application Layer (Vercel + Code):**
+- ✅ CORS protection: API hanya bisa diakses dari domain resmi
+- ✅ Origin + Referer validation
+- ✅ App-level rate limiting: 10 requests per menit per IP
+- ✅ Input validation & sanitization
+- ✅ X-Frame-Options: DENY (anti-clickjacking)
+- ✅ Content-Security-Policy (CSP) aktif
+- ✅ Strict-Transport-Security (HSTS) aktif
+
+**Data Layer (Client-side):**
+- ✅ Backup encryption: AES-GCM 256-bit
+- ✅ Key derivation: PBKDF2 (100K iterations)
+- ✅ localStorage isolation
+- ✅ No sensitive data in logs
+
 ---
 
 ## Stack Teknologi
@@ -197,6 +238,8 @@ Pencet chip **📣 Promosi**, dan WarungKita pakai **MiniMax-M3** untuk membuatk
 | State | localStorage (client-side) |
 | Parser | Regex + NLP lokal (tanpa API call) |
 | GenAI | MiniMax-M3 via B.AI API (8-key rotation) |
+| Security | Cloudflare WAF + Vercel security headers |
+| Encryption | Web Crypto API (AES-GCM + PBKDF2) |
 | Deployment | Vercel (static) |
 | PWA | Service Worker + Web App Manifest |
 
@@ -235,11 +278,11 @@ warungkita/
 │   ├── transactions.js, items.js, utang.js, pengeluaran.js, report.js, tutup.js
 │   ├── chat.js, events.js, helpers.js, utils.js, pwa.js
 ├── api/
-│   └── genai.js     # Serverless function — proxy ke B.AI (key server-side)
+│   └── genai.js     # Serverless function — proxy ke B.AI (key server-side, rate limited)
 ├── sw.js            # Service Worker (PWA)
 ├── manifest.json    # Web App Manifest
 ├── favicon.svg      # Ikon warung
-├── vercel.json      # Security headers + CORS
+├── vercel.json      # Security headers + CORS + CSP
 ├── preview/         # Purwarupa statis (arsip)
 └── README.md
 ```
@@ -264,6 +307,41 @@ WarungKita menjawab ketiga masalah tersebut dalam satu antarmuka chat.
 
 ---
 
+## Changelog
+
+### v4.0 (2026-07-12) — Security & UX Update
+- ✅ **Backup encryption** — AES-GCM 256-bit + PBKDF2 key derivation
+- ✅ **Backup button** — Quick action chip `💾 Backup` (no need to type command)
+- ✅ **CORS hardening** — API locked to official domains only
+- ✅ **Origin + Referer validation** — Block unauthorized API access
+- ✅ **Cloudflare rate limiting** — 50 req/10s per IP (network layer)
+- ✅ **App-level rate limiting** — 10 req/min per IP (application layer)
+- ✅ **Security headers** — X-Frame, CSP, HSTS, Permissions-Policy
+- ✅ **Button layout fix** — All quick action chips fit without cutoff
+
+### v3.5 (2026-07-04) — Modular Refactor
+- ✅ Split monolithic `app.js` into modular `src/*.js`
+- ✅ Improved code maintainability
+- ✅ Added typo tolerance with fuzzy matching
+
+### v3.0 (2026-06-28) — GenAI Integration
+- ✅ AI Ringkasan laporan (MiniMax-M3)
+- ✅ AI Promosi WA Story
+- ✅ 8-key API rotation for high availability
+
+### v2.0 (2026-06-25) — Feature Complete
+- ✅ Utang (kasbon) management
+- ✅ Stok tracking
+- ✅ Backup & restore (plain JSON)
+- ✅ PWA support
+
+### v1.0 (2026-06-23) — Initial Release
+- ✅ Basic transaction tracking
+- ✅ Chat-based interface
+- ✅ Mobile-first design
+
+---
+
 ## Konteks Submission
 
 Proyek ini dibangun untuk **IDCamp Developer Challenge #2: Digitalisasi & Akselerasi UMKM dengan Generative AI** (Mei–Juli 2026).
@@ -274,9 +352,14 @@ Proyek ini dibangun untuk **IDCamp Developer Challenge #2: Digitalisasi & Aksele
 - Tanpa registrasi akun
 - Alur konfirmasi sebelum penyimpanan (UX pemaaf)
 - 100% generic — cocok untuk warung jenis apapun
+- Security-first (v4.0+)
 
 ---
 
-<p align="center">
-  <sub>Dibuat untuk 64 juta UMKM Indonesia</sub>
-</p>
+## License
+
+MIT License — Built with ❤️ for Indonesian UMKM
+
+---
+
+*Dibuat untuk 64 juta UMKM Indonesia* 🇮🇩
