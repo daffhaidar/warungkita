@@ -102,6 +102,7 @@ function bindEvents() {
       const cmd = btn.dataset.cmd;
       if (cmd === 'tutup') { showTutupModal(); return; }
       if (cmd === 'promosi') { showPromosi(); return; }
+      if (cmd === 'backup') { backupData(); return; }
       if (cmd === 'jual') {
         document.getElementById('chatInput').placeholder = 'Ketik: "jual soto 3"';
         document.getElementById('chatInput').focus();
