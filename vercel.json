@@ -21,5 +21,14 @@
         { "key": "Access-Control-Max-Age", "value": "86400" }
       ]
     }
+  ],
+  "routes": [
+    {
+      "src": "/api/genai",
+      "headers": {
+        "Access-Control-Allow-Origin": "https://warungkita.web.id"
+      },
+      "methods": ["POST", "OPTIONS"]
+    }
   ]
 }

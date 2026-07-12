@@ -4,7 +4,12 @@
 
 const BAI_BASE = 'https://api.b.ai/v1/chat/completions';
 const BAI_MODEL = 'minimax-m3';
-const ALLOWED_ORIGIN = 'https://warungkita.vercel.app';
+const ALLOWED_ORIGINS = [
+  'https://warungkita.web.id',
+  'https://www.warungkita.web.id',
+  'https://warungkita.vercel.app',
+  'https://warungkita-patch.vercel.app'
+];
 
 // --- CORS & Referer Check ---
 function checkOrigin(req) {
@@ -12,13 +17,16 @@ function checkOrigin(req) {
   const referer = req.headers.referer;
   
   // Check Origin header (for CORS preflight/actual requests)
-  if (origin && origin !== ALLOWED_ORIGIN) {
+  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
     return { valid: false, error: 'Invalid origin' };
   }
   
   // Check Referer header (for simple POST requests)
-  if (referer && !referer.startsWith(ALLOWED_ORIGIN)) {
-    return { valid: false, error: 'Invalid referer' };
+  if (referer) {
+    const refererValid = ALLOWED_ORIGINS.some(allowed => referer.startsWith(allowed));
+    if (!refererValid) {
+      return { valid: false, error: 'Invalid referer' };
+    }
   }
   
   return { valid: true };
