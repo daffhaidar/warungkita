@@ -4,7 +4,7 @@
 
 [![Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://warungkita.vercel.app)
 [![Stack](https://img.shields.io/badge/stack-Vanilla_JS_+_PWA-8b7e6a)](https://github.com/daffhaidar/warungkita)
-[![Security](https://img.shields.io/badge/security-v4.0-hardened)](https://github.com/daffhaidar/warungkita)
+[![Security](https://img.shields.io/badge/security-v4.1-hardened)](https://github.com/daffhaidar/warungkita)
 
 ---
 
@@ -41,7 +41,7 @@ Contoh perintah sehari-hari:
 |---|---|
 | Catet jualan | `jual soto 2` |
 | Jual + langsung kasih harga | `jual indomie 1 bks 3500` |
-| Catet utang pelanggan | `utang budi soto 2 15000` |
+| Catat utang pelanggan | `utang budi soto 2 15000` |
 | Jual + catat utang sekaligus | `jual rokok 1 pack utang budi` |
 | Hitung kembalian | `bayar 35000 50000` |
 | Catat pengeluaran/beli bahan | `beli minyak 20rb` |
@@ -50,6 +50,9 @@ Contoh perintah sehari-hari:
 | Lihat daftar utang | `utang` |
 | Bikin promosi WA Story (AI) | pencet chip `📣 Promosi` |
 | Backup data | pencet chip `💾 Backup` |
+| Export ke Excel | pilih "Cancel" saat backup |
+| Kirim laporan WA | pencet chip `📱 WhatsApp` |
+| Simpan PDF | pencet chip `📄 PDF` |
 | Tutup warung + rekap | `tutup` |
 
 ---
@@ -142,7 +145,7 @@ Contoh perintah sehari-hari:
 | Perintah | Contoh | Keterangan |
 |----------|--------|------------|
 | `help` / `bantuan` / `?` | `help` | Lihat menu bantuan |
-| `backup` / `cadangkan` / `export` | `backup` atau pencet chip `💾 Backup` | Unduh cadangan data (JSON terenkripsi) |
+| `backup` / `cadangkan` / `export` | `backup` atau pencet chip `💾 Backup` | Unduh cadangan data (JSON/CSV) |
 | `restore` / `pulihkan` / `import` | `restore` | Pulihkan data dari file cadangan |
 
 ---
@@ -167,14 +170,27 @@ Hitung kembalian instan — cukup ketik `bayar 35000 50000`. Setelah transaksi, 
 ### 📱 PWA
 Bisa di-install sebagai app di HP (Add to Home Screen). Data tersimpan di localStorage — offline tetap jalan.
 
-### 💾 Backup & Restore Data (v4.0 — Encrypted)
+### 💾 Backup & Restore Data (v4.1 — Multi-Format)
 Karena data tersimpan di localStorage (per-perangkat), pemilik warung bisa mengamankan datanya kapan saja. 
 
-**Cara backup:**
-1. Pencet chip **💾 Backup** di quick actions, atau ketik `backup`
-2. Pilih **"OK"** untuk enkripsi (recommended) atau **"Batal"** untuk plain backup
-3. Jika enkripsi: masukkan password (min 4 karakter) dan konfirmasi
-4. Download file: `warungkita-backup-YYYY-MM-DD-encrypted.json`
+**3 Format Backup:**
+
+**1. JSON (Encrypted) — Untuk Restore:**
+- Klik `💾 Backup` → Pilih "OK"
+- Masukkan password (min 4 karakter)
+- Download: `warungkita-backup-YYYY-MM-DD-encrypted.json`
+- Gunakan untuk restore data di HP lain
+
+**2. CSV (Excel) — Untuk View & Edit:**
+- Klik `💾 Backup` → Pilih "Cancel"
+- Download: `warungkita-laporan-YYYY-MM-DD.csv`
+- Buka di Excel, Google Sheets, atau Numbers
+- Format: Tanggal, Jam, Item, Qty, Satuan, Harga, Total, Tipe
+
+**3. PDF — Untuk Cetak/Arsip:**
+- Klik `📄 PDF`
+- Tab baru terbuka dengan laporan
+- Save as PDF: Ctrl+P (Desktop) atau Share → Print (HP)
 
 **Cara restore:**
 1. Ketik `restore`
@@ -182,7 +198,40 @@ Karena data tersimpan di localStorage (per-perangkat), pemilik warung bisa menga
 3. Jika file terenkripsi: masukkan password
 4. Data otomatis dipulihkan
 
-> 🔒 **Keamanan:** Backup menggunakan **AES-GCM 256-bit** encryption dengan key derivation **PBKDF2** (100K iterations). Password TIDAK tersimpan di file — jika lupa password, data TIDAK bisa dipulihkan.
+> 🔒 **Keamanan:** Backup JSON menggunakan **AES-GCM 256-bit** encryption dengan key derivation **PBKDF2** (100K iterations). Password TIDAK tersimpan di file — jika lupa password, data TIDAK bisa dipulihkan.
+
+### 📱 WhatsApp Report (v4.1)
+Kirim laporan harian langsung ke WhatsApp dengan satu klik:
+
+1. Klik chip `📱 WhatsApp`
+2. Laporan otomatis disalin ke clipboard
+3. Paste ke WhatsApp atau klik link "📲 Buka WhatsApp"
+
+**Format laporan:**
+```
+📊 LAPORAN HARIAN - [Nama Warung]
+📅 [Tanggal]
+
+💰 Omzet: Rp X
+📦 Transaksi: X
+💸 Pengeluaran: Rp X
+✅ Bersih: Rp X
+
+🏆 Terlaris:
+1. [Produk] (Xx)
+2. [Produk] (Xx)
+3. [Produk] (Xx)
+
+💳 Total Utang: Rp X
+```
+
+### 📄 PDF Export (v4.1)
+Simpan laporan sebagai PDF untuk cetak atau arsip:
+
+1. Klik chip `📄 PDF`
+2. Tab baru terbuka dengan laporan (print-friendly layout)
+3. **Desktop:** Tekan Ctrl+P → Pilih "Save as PDF"
+4. **HP:** Tap menu (⋮) → "Share" → "Print" → "Save as PDF"
 
 ### 🤖 AI Ringkasan (Generative AI)
 Setiap kali user membuka laporan harian (`laporan`) atau menutup warung (`tutup`), sistem secara otomatis menghasilkan ringkasan naratif menggunakan **MiniMax-M3** (Generative AI). Ringkasan mencakup analisis omzet, produk terlaris, progress target, dan motivasi harian — dalam bahasa Indonesia yang natural dan emoji. Didukung oleh 8 API key dengan rotasi otomatis untuk availability tinggi.
@@ -203,9 +252,9 @@ Pencet chip **📣 Promosi**, dan WarungKita pakai **MiniMax-M3** untuk membuatk
 
 > Menjawab kebutuhan UMKM "pembuatan materi promosi otomatis" — pemilik warung yang nggak punya waktu/skill bikin caption tinggal sekali pencet.
 
-### 🔒 Security Hardening (v4.0)
+### 🔒 Security Hardening (v4.1)
 
-WarungKita v4.0 dilengkapi dengan proteksi keamanan berlapis:
+WarungKita v4.1 dilengkapi dengan proteksi keamanan berlapis:
 
 **Network Layer (Cloudflare):**
 - ✅ Rate limiting: 50 requests per 10 detik per IP
@@ -240,6 +289,7 @@ WarungKita v4.0 dilengkapi dengan proteksi keamanan berlapis:
 | GenAI | MiniMax-M3 via B.AI API (8-key rotation) |
 | Security | Cloudflare WAF + Vercel security headers |
 | Encryption | Web Crypto API (AES-GCM + PBKDF2) |
+| Export | CSV (native), PDF (print), WhatsApp (clipboard) |
 | Deployment | Vercel (static) |
 | PWA | Service Worker + Web App Manifest |
 
@@ -277,6 +327,7 @@ warungkita/
 │   ├── input.js     # Parser perintah chat
 │   ├── transactions.js, items.js, utang.js, pengeluaran.js, report.js, tutup.js
 │   ├── chat.js, events.js, helpers.js, utils.js, pwa.js
+│   ├── commands.js, commands-utang.js
 ├── api/
 │   └── genai.js     # Serverless function — proxy ke B.AI (key server-side, rate limited)
 ├── sw.js            # Service Worker (PWA)
@@ -309,11 +360,19 @@ WarungKita menjawab ketiga masalah tersebut dalam satu antarmuka chat.
 
 ## Changelog
 
+### v4.1 (2026-07-12) — Export & Reporting Update
+- ✅ **CSV Export** — Excel-compatible format (Tanggal, Item, Qty, Harga, Total)
+- ✅ **WhatsApp Report** — One-click copy + share to WhatsApp
+- ✅ **PDF Export** — Print-friendly layout with save instructions
+- ✅ **Backup UX** — Format selection dialog (JSON vs CSV)
+- ✅ **Quick Actions** — Added 📱 WhatsApp & 📄 PDF buttons
+- ✅ **Cache Bump** — All JS files updated to v=5
+
 ### v4.0 (2026-07-12) — Security & UX Update
 - ✅ **Backup encryption** — AES-GCM 256-bit + PBKDF2 key derivation
 - ✅ **Backup button** — Quick action chip `💾 Backup` (no need to type command)
 - ✅ **CORS hardening** — API locked to official domains only
-- ✅ **Origin + Referer validation** — Block unauthorized API access
+- ✅ **Origin + Referer check** — Block unauthorized API access
 - ✅ **Cloudflare rate limiting** — 50 req/10s per IP (network layer)
 - ✅ **App-level rate limiting** — 10 req/min per IP (application layer)
 - ✅ **Security headers** — X-Frame, CSP, HSTS, Permissions-Policy
@@ -353,6 +412,7 @@ Proyek ini dibangun untuk **IDCamp Developer Challenge #2: Digitalisasi & Aksele
 - Alur konfirmasi sebelum penyimpanan (UX pemaaf)
 - 100% generic — cocok untuk warung jenis apapun
 - Security-first (v4.0+)
+- User-friendly export (v4.1+)
 
 ---
 
