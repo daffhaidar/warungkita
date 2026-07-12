@@ -103,6 +103,8 @@ function bindEvents() {
       if (cmd === 'tutup') { showTutupModal(); return; }
       if (cmd === 'promosi') { showPromosi(); return; }
       if (cmd === 'backup') { backupData(); return; }
+      if (cmd === 'whatsapp') { sendWhatsAppReport(); return; }
+      if (cmd === 'pdf') { exportToPDF(); return; }
       if (cmd === 'jual') {
         document.getElementById('chatInput').placeholder = 'Ketik: "jual soto 3"';
         document.getElementById('chatInput').focus();
