@@ -12,10 +12,12 @@ function showTutupModal() {
 }
 
 function handleTutup() {
-  const jam = new Date().getHours();
-  if (jam < 20) {
+  const now = new Date();
+  const jamStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const jamAngka = now.getHours();
+  if (jamAngka < 20) {
     document.getElementById('modalBukaTitle').textContent = 'Masih awal nih..';
-    document.getElementById('modalBukaDesc').innerHTML = `Baru jam <strong>${jam}:00</strong>. Mau jualan lagi?`;
+    document.getElementById('modalBukaDesc').innerHTML = `Baru jam <strong>${jamStr}</strong>. Mau jualan lagi?`;
     document.getElementById('modalBuka').classList.add('active');
   }
   showRekap();
