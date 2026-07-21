@@ -27,3 +27,7 @@ backend/
 # Duplicate frontend mirror + dead legacy monolith (not referenced by root index.html)
 frontend/
 app.legacy.js
+
+# Patch artifacts (git merge/rebase leftovers)
+*.orig
+*.rej
